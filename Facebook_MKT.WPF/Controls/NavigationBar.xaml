@@ -1,0 +1,131 @@
+﻿<UserControl x:Class="Facebook_MKT.WPF.Controls.NavigationBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Facebook_MKT.WPF.Controls"
+             xmlns:nav="clr-namespace:Facebook_MKT.WPF.State.Navigators"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="200"
+             Foreground="White">
+
+    <UserControl.Resources>
+        <!-- Style cho PackIcon -->
+        <Style TargetType="materialDesign:PackIcon" x:Key="CustomPackIconStyle">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+        </Style>
+
+
+
+    </UserControl.Resources>
+
+    <StackPanel Background="#FF04021F">
+        <StackPanel HorizontalAlignment="Center">
+            <!--<Image Source="/Assets/Images/Logo.png" Grid.Row="0" Height="70" Stretch="Fill"/>-->
+            <TextBlock Margin="10" Text="Dio Brando" FontSize="40" FontFamily="Bernard MT Condensed">
+                <TextBlock.Foreground>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="White" Offset="1"/>
+                        <GradientStop Color="#FF301FAD" Offset="0"/>
+                    </LinearGradientBrush>
+                </TextBlock.Foreground>
+            </TextBlock>
+        </StackPanel>
+
+        <StackPanel x:Name="Page" Margin="0,0,0,20">
+            <Expander Header="Chức Năng Page" Background="#FF04021F" 
+                      Foreground="White" FontWeight="Bold">
+                <Expander.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="EarthArrowDown" Style="{StaticResource CustomPackIconStyle}"/>
+                            <Rectangle Width="5"/>
+                            <TextBlock Text="Page" FontSize="20"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Expander.HeaderTemplate>
+                <Expander.Content>
+                    <StackPanel>
+                        <Button Content="Tương tác page"   
+                                Style="{Binding DataContext.SelectedViewType,
+                            RelativeSource={RelativeSource AncestorType=UserControl}, 
+                            Converter={StaticResource ViewTypeToStyleConverter}, 
+                            ConverterParameter={x:Static nav:ViewType.Page}}"
+                                Command="{Binding UpdateCurrentViewModelCommand}" 
+                                CommandParameter="{x:Static nav:ViewType.Page}">
+
+                        </Button>
+
+                        <Button Content="Đăng Bài Page"   
+                                Style="{Binding DataContext.SelectedViewType,
+                            RelativeSource={RelativeSource AncestorType=UserControl}, 
+                            Converter={StaticResource ViewTypeToStyleConverter}, 
+                            ConverterParameter={x:Static nav:ViewType.PagePost}}"
+                                Command="{Binding UpdateCurrentViewModelCommand}" 
+                                CommandParameter="{x:Static nav:ViewType.PagePost}">
+
+                        </Button>
+
+                    </StackPanel>
+                </Expander.Content>
+            </Expander>
+        </StackPanel>
+
+        <StackPanel x:Name="Group" Margin="0,0,0,20">
+            <Expander Header="Chức Năng Group" Background="#FF04021F" 
+                      Foreground="White" FontWeight="Bold" FontSize="20">
+                <Expander.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DomainArrowRight" Style="{StaticResource CustomPackIconStyle}"/>
+                            <Rectangle Width="5"/>
+                            <!-- Khoảng cách giữa icon và text -->
+                            <TextBlock Text="Group" FontSize="20" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Expander.HeaderTemplate>
+                <Expander.Content>
+                    <StackPanel>
+                        <Button Content="Đăng bài group"     
+                                Style="{Binding DataContext.SelectedViewType,
+                                RelativeSource={RelativeSource AncestorType=UserControl}, 
+                                Converter={StaticResource ViewTypeToStyleConverter}, 
+                                ConverterParameter={x:Static nav:ViewType.Group}}"
+                                Command="{Binding UpdateCurrentViewModelCommand}" 
+                                CommandParameter="{x:Static nav:ViewType.Group}" />
+                    </StackPanel>
+                </Expander.Content>
+            </Expander>
+        </StackPanel>
+
+        <StackPanel x:Name="Other" Margin="0,0,0,20">
+            <Expander Background="#FF04021F" 
+                      Foreground="White" FontWeight="Bold" FontSize="20">
+                <Expander.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="AccountArrowUp" Style="{StaticResource CustomPackIconStyle}"/>
+                            <Rectangle Width="5"/>
+                            <TextBlock Text="Account" FontSize="20"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Expander.HeaderTemplate>
+                <Expander.Content>
+                    <StackPanel>
+                        <Button Content="Nuôi tài khoản"    
+                                Style="{Binding DataContext.CurrentViewModel,
+                                RelativeSource={RelativeSource AncestorType=UserControl}, 
+                                Converter={StaticResource ViewTypeToStyleConverter}, 
+                                ConverterParameter={x:Static nav:ViewType.Other}}"
+                                Command="{Binding UpdateCurrentViewModelCommand}" 
+                                CommandParameter="{x:Static nav:ViewType.Other}" />
+                    </StackPanel>
+                </Expander.Content>
+            </Expander>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

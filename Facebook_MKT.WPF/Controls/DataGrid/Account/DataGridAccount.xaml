@@ -1,0 +1,310 @@
+﻿<UserControl x:Class="Facebook_MKT.WPF.Controls.DataGrid.Account.DataGridAccount"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid.Account"
+             xmlns:context="clr-namespace:Facebook_MKT.WPF.ViewModels.DataGrid"
+             xmlns:accType="clr-namespace:Facebook_MKT.WPF.ViewModels.Pages"
+             xmlns:datagridAccVM="clr-namespace:Facebook_MKT.WPF.ViewModels.DataGrid"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <!-- Style for DataGridColumnHeader -->
+        <Style x:Key="BoldHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <!-- Adjust the size as needed -->
+            <Setter Property="Background" Value="#04021F"/>
+        </Style>
+        
+        
+        <Style TargetType="DataGridRow">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="Transparent"/>
+
+            <!-- Thay đổi nếu bạn muốn màu nền mặc định -->
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#320B86"/>
+                    <!-- Màu nền khi được chọn -->
+                    <Setter Property="Foreground" Value="White"/>
+                    <!-- Màu chữ khi được chọn -->
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#320B86"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#320B86"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+            
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Background="Transparent">
+        <DataGrid
+                 x:Name="myDataGrid"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="All"
+                CanUserSortColumns="True"
+                ItemsSource="{Binding Accounts}"
+                SelectionUnit="FullRow"
+                Background="Transparent"
+                BorderThickness="0"
+                BorderBrush="Transparent"
+                RowHeight="40"
+                SelectionMode="Extended"
+                RowHeaderWidth="0"
+                ColumnHeaderStyle="{StaticResource BoldHeaderStyle}">
+            <DataGrid.Resources>
+               
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+
+
+                <!-- Checkbox column to select rows -->
+                <DataGridCheckBoxColumn
+                    Binding="{Binding IsSelected,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Width="80"
+                   
+                    CanUserResize="True">
+                    <DataGridCheckBoxColumn.Header>
+                        <CheckBox Margin="30,0,0,0" 
+                                IsChecked="{Binding context.IsAllItemsSelected, 
+                                Mode=TwoWay,
+                                UpdateSourceTrigger=PropertyChanged,
+                             RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
+                        <!--<TextBlock Text="{Binding DataContext.IsAllItemsSelected, 
+            RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />-->
+                    </DataGridCheckBoxColumn.Header>
+                   
+                </DataGridCheckBoxColumn>
+
+
+                <!-- Column for Account UID -->
+                <materialDesign:DataGridTextColumn
+                    
+                          EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                          ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                          Header="UID"
+                            Width="180">
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="UID">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+              xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <!-- Column for Account Password -->
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Password"
+                    Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Password">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <!-- Column for Account Status -->
+                <DataGridTextColumn
+            Binding="{Binding Status}"
+            Header="Status"
+                    Width="200"
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+            ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}" />
+
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Email1"
+                     Width="180">
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Email1">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Email1Password"
+                    Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Email1Password">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+                
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Email2"
+                    Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Email2">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Email2Password"
+                    Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Email2Password">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Token"
+                     Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Token">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Cookie"
+                     Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Cookie">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+
+                <materialDesign:DataGridTextColumn
+                     EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
+                     ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                     Header="Proxy"
+                    Width="180"
+>
+                    <materialDesign:DataGridTextColumn.Binding>
+                        <Binding
+                        Path="Proxy">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+         xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </materialDesign:DataGridTextColumn.Binding>
+                </materialDesign:DataGridTextColumn>
+            </DataGrid.Columns>
+
+            <!--MenuItem-->
+            <DataGrid.ContextMenu >
+                <ContextMenu Background="#04021F">
+                    <MenuItem Header="Thêm tài khoản"  Background="#04021F">
+                        <MenuItem Header="UID|Pass|2FA" 
+                                  Command="{Binding AddAccountCommand}"
+                                  CommandParameter="{x:Static accType:AddAccountType.UID_Pass_2FA}">
+                        </MenuItem>
+                        <MenuItem Header="UID|Pass|2FA|Cookie" 
+                          Command="{Binding AddAccountCommand}"
+                          CommandParameter="{x:Static accType:AddAccountType.UID_Pass_2FA_Cookie}">
+                        </MenuItem>
+                        <MenuItem Header="UID|Pass|2FA|Cookie|Token" 
+                           Command="{Binding AddAccountCommand}"
+                           CommandParameter="{x:Static accType:AddAccountType.UID_Pass_2FA_Cookie_Token}">
+                        </MenuItem>
+                        <MenuItem Header="UID|Pass|2FA|Cookie|Token|Email|PassEmail" 
+                           Command="{Binding AddAccountCommand}"
+                           CommandParameter="{x:Static accType:AddAccountType.UID_Pass_2FA_Cookie_Token_Email_PassEmail}">
+                        </MenuItem>
+                    </MenuItem>
+
+                    <MenuItem Header="Edit" Command="{Binding EditCommand}">
+
+                    </MenuItem>
+                    <MenuItem Header="Delete" Command="{Binding DeleteCommand}">
+
+                    </MenuItem>
+                    <MenuItem Header="Chọn / Bỏ Chọn" 
+          Command="{Binding SelectedOrUnSelectedCommand}"
+          CommandParameter="{Binding ElementName=myDataGrid, Path=SelectedItems}">
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="ToolTip" Value="{Binding ElementName=myDataGrid, Path=SelectedItems.Count}"/>
+                            </Style>
+                        </MenuItem.Style>
+                    </MenuItem>
+
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+    </Grid>
+</UserControl>
