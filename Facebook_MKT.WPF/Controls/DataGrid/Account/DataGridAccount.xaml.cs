@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Facebook_MKT.WPF.ViewModels.DataGrid;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MaterialDesignThemes.Wpf.Theme;
 
 namespace Facebook_MKT.WPF.Controls.DataGrid.Account
 {
@@ -25,6 +27,21 @@ namespace Facebook_MKT.WPF.Controls.DataGrid.Account
 			InitializeComponent();
 			//MessageBox.Show(this.DataContext.ToString());
 			//Console.WriteLine("sdjkghdsi");
+		}
+		private void CheckBox_Checked(object sender, RoutedEventArgs e)
+		{
+			if (DataContext is DataGridAccountViewModel viewModel)
+			{
+				viewModel.IsAllItemsSelected = true;
+			}
+		}
+
+		private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			if (DataContext is DataGridAccountViewModel viewModel)
+			{
+				viewModel.IsAllItemsSelected = false;
+			}
 		}
 	}
 }

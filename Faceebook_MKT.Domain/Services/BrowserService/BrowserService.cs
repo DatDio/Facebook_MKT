@@ -1,4 +1,8 @@
-﻿using Facebook_MKT.API.GPMLoginAPI;
+﻿using AutoMapper;
+using Facebook_MKT.API.GPMLoginAPI;
+using Facebook_MKT.Data.Entities;
+using Facebook_MKT.Data.Services;
+using Faceebook_MKT.Domain.Helpers;
 using Faceebook_MKT.Domain.Models;
 using OpenQA.Selenium.Chrome;
 using System;
@@ -11,16 +15,21 @@ namespace Faceebook_MKT.Domain.Services.BrowserService
 {
 	public class BrowserService
 	{
-		
+		private readonly IDataService<Account> _dataService;
 		ChromeDriver driver;
-		AccountModel account;
+		AccountModel accountModel;
 		//public string createdProfileId;
 		private GPMLoginAPI api;
-		public BrowserService(AccountModel account)
+		private readonly IMapper _mapper;
+		public BrowserService(AccountModel accountModel, 
+			IDataService<Account> dataService,
+			IMapper mapper)
 		{
-			this.account = account;
+			_dataService = dataService;
+			this.accountModel = accountModel;
+			_mapper = mapper;
 		}
-		public ChromeDriver OpenChromeGpm(string apiGpm, 
+		public async Task<ChromeDriver> OpenChromeGpm(string apiGpm, 
 										string createdProfileId, string name, 
 										string useragent = "", double scale = 0.7,
 										string proxy = "", bool hideBrowser = false, 
@@ -41,8 +50,9 @@ namespace Faceebook_MKT.Domain.Services.BrowserService
 					if (status)
 					{
 						createdProfileId = Convert.ToString(createdResult["profile_id"]);
-						account.GPMID = createdProfileId;
-						//FunctionHelper.EditValueColumn(account, "C_GPMID", createdProfileId, true);
+						accountModel.GPMID = createdProfileId;
+						var accountEntity = _mapper.Map<Account>(accountModel);
+						await _dataService.Update(accountEntity.AccountIDKey, accountEntity);
 					}
 
 				}
@@ -107,11 +117,11 @@ namespace Faceebook_MKT.Domain.Services.BrowserService
 			var chromeDriverService = ChromeDriverService.CreateDefaultService();
 			chromeDriverService.HideCommandPromptWindow = true;
 			var chromeOption = new ChromeOptions();
-			chromeOption.AddArgument("--user-data-dir=" + Path.GetFullPath("profile/" + account.Email1));
+			chromeOption.AddArgument("--user-data-dir=" + Path.GetFullPath("profile/" + accountModel.Email1));
 
-			if (account.UserAgent != "")
+			if (accountModel.UserAgent != "")
 			{
-				chromeOption.AddArgument("--user-agent=" + account.UserAgent);
+				chromeOption.AddArgument("--user-agent=" + accountModel.UserAgent);
 			}
 			if (userAgent != "")
 				chromeOption.AddArgument($"--user-agent={userAgent}");
@@ -139,9 +149,9 @@ namespace Faceebook_MKT.Domain.Services.BrowserService
 			chromeOption.AddArgument("--window-size=600,800");
 			chromeOption.AddArgument($"--window-position={position}");
 
-			if (!string.IsNullOrEmpty(account.Proxy))
+			if (!string.IsNullOrEmpty(accountModel.Proxy))
 			{
-				chromeOption.AddArgument("--proxy-server=" + account.Proxy);
+				chromeOption.AddArgument("--proxy-server=" + accountModel.Proxy);
 			}
 
 			driver = new ChromeDriver(chromeDriverService, chromeOption);
@@ -166,7 +176,7 @@ namespace Faceebook_MKT.Domain.Services.BrowserService
 			catch { }
 			try
 			{
-				api.Stop(account.GPMID);
+				api.Stop(accountModel.GPMID);
 			}
 			catch
 			{

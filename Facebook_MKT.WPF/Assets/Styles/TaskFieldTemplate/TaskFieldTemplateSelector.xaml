@@ -1,0 +1,90 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                   xmlns:local="clr-namespace:Facebook_MKT.WPF.Assets.Styles.TaskFieldTemplate">
+    <!-- Template for Text -->
+    <DataTemplate x:Key="TextFieldTemplate">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Label}" Margin="0,10,10,10" VerticalAlignment="Center" />
+            <TextBox Text="{Binding Value, Mode=TwoWay}" Width="200" />
+        </StackPanel>
+    </DataTemplate>
+    <!-- Template for MultiText -->
+    <DataTemplate x:Key="MultiTextFieldTemplate">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Label}" Margin="0,10,10,10" VerticalAlignment="Center" />
+            <TextBox
+    Height="100"
+    VerticalAlignment="Top"
+    materialDesign:HintAssist.Hint="Nhập nội dung bài viết"
+    TextWrapping="Wrap"
+    Text="{Binding Value, Mode=TwoWay}"
+    VerticalScrollBarVisibility="Auto"
+    />
+        </StackPanel>
+    </DataTemplate>
+    <!-- Template for Label -->
+    <DataTemplate x:Key="LabelFieldTemplate">
+        <StackPanel Orientation="Horizontal">
+            <Label Content="{Binding Label}" Margin="0,10,10,10" VerticalAlignment="Center" />
+        </StackPanel>
+    </DataTemplate>
+    <!-- Template for Number -->
+    <DataTemplate x:Key="NumberFieldTemplate">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Label}" Margin="0,0,0,0" VerticalAlignment="Center" />
+            <materialDesign:NumericUpDown 
+                Value="{Binding Value}"
+                Background="WhiteSmoke"
+                Foreground="Black"
+                Margin="10">
+                <materialDesign:NumericUpDown.IncreaseContent>
+                    <Border
+      BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+      BorderThickness="1"
+      CornerRadius="20"
+     >
+                        <materialDesign:PackIcon
+        Kind="ArrowUp" />
+                    </Border>
+                </materialDesign:NumericUpDown.IncreaseContent>
+                <materialDesign:NumericUpDown.DecreaseContent>
+                    <Border
+      BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}"
+      BorderThickness="1"
+      CornerRadius="20"
+     >
+                        <materialDesign:PackIcon
+        Kind="ArrowDown" />
+                    </Border>
+                </materialDesign:NumericUpDown.DecreaseContent>
+            </materialDesign:NumericUpDown>
+        </StackPanel>
+    </DataTemplate>
+
+    
+    <!-- Template for File -->
+    <DataTemplate x:Key="FileFieldTemplate">
+        <StackPanel Orientation="Horizontal" Margin="0,10,10,10">
+            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <Button Content="Browse..." 
+                    Command="{Binding DataContext.BrowseCommand,
+                RelativeSource={RelativeSource AncestorType=ListBox}}" 
+                    CommandParameter="{Binding}"/>
+
+            <TextBlock Text="{Binding Value}" Margin="10,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+    </DataTemplate>
+
+
+
+    <!-- Template Selector -->
+    <local:TaskFieldTemplateSelector
+        x:Key="TaskFieldTemplateSelector"
+        TextFieldTemplate="{StaticResource TextFieldTemplate}"
+        MultiTextFieldTemplate="{StaticResource MultiTextFieldTemplate}"
+        LabelFieldTemplate="{StaticResource LabelFieldTemplate}"
+        NumberFieldTemplate="{StaticResource NumberFieldTemplate}"
+         
+        FileFieldTemplate="{StaticResource FileFieldTemplate}" />
+</ResourceDictionary>

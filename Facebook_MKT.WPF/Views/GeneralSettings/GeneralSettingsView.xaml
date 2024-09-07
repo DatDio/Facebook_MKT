@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="Facebook_MKT.WPF.Views.GeneralSettings.GeneralSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Facebook_MKT.WPF.Views.GeneralSettings"
+              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <DockPanel Background="{StaticResource backgroundColor}">
+
+        <StackPanel 
+            HorizontalAlignment="Left"
+            Margin="20,20,0,0">
+
+            <TextBlock 
+                Text="Settings" 
+                FontSize="18" 
+                FontWeight="Bold" 
+                Margin="0,0,0,20" />
+
+            <TextBox
+                materialDesign:HintAssist.Hint="Scale Trình Duyệt :"
+                materialDesign:HintAssist.Foreground="White"
+                materialDesign:HintAssist.HelperTextFontSize="20"
+                materialDesign:HintAssist.FloatingScale="0.7"
+                MaxWidth="120"
+                Style="{StaticResource MaterialDesignFilledTextBox}"
+                Text="{Binding Scale}"
+                FontSize="16"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,20"/>
+
+            <TextBox
+                materialDesign:HintAssist.Hint="API URL GPM :"
+                materialDesign:HintAssist.Foreground="White"
+                materialDesign:HintAssist.HelperTextFontSize="20"
+                materialDesign:HintAssist.FloatingScale="0.7"
+                Style="{StaticResource MaterialDesignFilledTextBox}"
+                Text="{Binding APIURL}"
+                FontSize="16"
+                HorizontalAlignment="Left"/>
+
+            <!-- Thêm các phần tử khác ở đây -->
+
+        </StackPanel>
+
+    </DockPanel>
+
+</UserControl>

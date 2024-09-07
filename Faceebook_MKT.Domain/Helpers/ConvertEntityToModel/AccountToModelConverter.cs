@@ -14,10 +14,12 @@ namespace Faceebook_MKT.Domain.Helpers.ConvertToModel
 		{
 			return new AccountModel
 			{
+				AccountIDKey = entity.AccountIDKey,
 				UID = entity.UID,
 				Password = entity.Password,
 				Email1 = entity.Email1,
 				Email1Password = entity.Email1Password,
+				C_2FA = entity.C_2FA,
 				Email2 = entity.Email2,
 				Email2Password = entity.Email2Password,
 				Cookie = entity.Cookie,

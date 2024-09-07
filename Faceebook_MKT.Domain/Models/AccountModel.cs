@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Faceebook_MKT.Domain.Models
 	public class AccountModel : INotifyPropertyChanged, ISelectable
 	{
 		private bool _isSelected;
+		public int AccountIDKey { get; set; }
 		private ChromeDriver _driver;
 		private string? _uid;
 		private string? _password;
@@ -39,7 +41,16 @@ namespace Faceebook_MKT.Domain.Models
 				}
 			}
 		}
-
+		private Color _rowColor;
+		public Color RowColor
+		{
+			get => _rowColor;
+			set
+			{
+				_rowColor = value;
+				OnPropertyChanged(nameof(RowColor));
+			}
+		}
 		public string? UID
 		{
 			get { return _uid; }

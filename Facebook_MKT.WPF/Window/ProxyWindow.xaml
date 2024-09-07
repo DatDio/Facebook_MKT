@@ -1,0 +1,29 @@
+﻿<Window x:Class="Facebook_MKT.WPF.ProxyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Facebook_MKT.WPF"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="Set Proxy" Height="450" Width="800">
+    <Grid Background="{StaticResource backgroundColor}" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="90"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Foreground="White" FontSize="16" Margin="40,20,40,20">
+    Nhập danh sách proxy
+    <LineBreak/>
+    Theo định dạng ip:port hoặc ip:port:user:pass (dùng ip máy thì nhập null)
+        </TextBlock>
+
+        <RichTextBox x:Name="ProxyTextBox" Grid.Row="1" Foreground="White" FontSize="16"
+                    
+                     Margin="40,0,40,40" VerticalScrollBarVisibility="Auto"/>
+        <Button Grid.Row="2"  
+            Content="Áp Dụng" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
+                Width="100" Click="Button_Click" />
+    </Grid>
+</Window>

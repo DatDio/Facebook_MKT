@@ -38,7 +38,7 @@
 
         <StackPanel x:Name="Page" Margin="0,0,0,20">
             <Expander Header="Chức Năng Page" Background="#FF04021F" 
-                      Foreground="White" FontWeight="Bold">
+                      Foreground="White" FontWeight="Bold" IsExpanded="True">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -77,7 +77,7 @@
 
         <StackPanel x:Name="Group" Margin="0,0,0,20">
             <Expander Header="Chức Năng Group" Background="#FF04021F" 
-                      Foreground="White" FontWeight="Bold" FontSize="20">
+                      Foreground="White" FontWeight="Bold" FontSize="20" IsExpanded="True">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -102,9 +102,9 @@
             </Expander>
         </StackPanel>
 
-        <StackPanel x:Name="Other" Margin="0,0,0,20">
+        <StackPanel x:Name="Account" Margin="0,0,0,20">
             <Expander Background="#FF04021F" 
-                      Foreground="White" FontWeight="Bold" FontSize="20">
+                      Foreground="White" FontWeight="Bold" FontSize="20" IsExpanded="True">
                 <Expander.HeaderTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -120,9 +120,35 @@
                                 Style="{Binding DataContext.CurrentViewModel,
                                 RelativeSource={RelativeSource AncestorType=UserControl}, 
                                 Converter={StaticResource ViewTypeToStyleConverter}, 
-                                ConverterParameter={x:Static nav:ViewType.Other}}"
+                                ConverterParameter={x:Static nav:ViewType.AccountInteract}}"
                                 Command="{Binding UpdateCurrentViewModelCommand}" 
-                                CommandParameter="{x:Static nav:ViewType.Other}" />
+                                CommandParameter="{x:Static nav:ViewType.AccountInteract}" />
+                    </StackPanel>
+                </Expander.Content>
+            </Expander>
+        </StackPanel>
+
+        <StackPanel x:Name="Settings" Margin="0,0,0,20">
+            <Expander Background="#FF04021F" 
+               Foreground="White" FontWeight="Bold" FontSize="20" IsExpanded="True">
+                <Expander.HeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Cog" Style="{StaticResource CustomPackIconStyle}"/>
+                            <Rectangle Width="5"/>
+                            <TextBlock Text="Settings" FontSize="20"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Expander.HeaderTemplate>
+                <Expander.Content>
+                    <StackPanel>
+                        <Button Content="Cài đặt chung"    
+                         Style="{Binding DataContext.CurrentViewModel,
+                         RelativeSource={RelativeSource AncestorType=UserControl}, 
+                         Converter={StaticResource ViewTypeToStyleConverter}, 
+                         ConverterParameter={x:Static nav:ViewType.GeneralSettings}}"
+                         Command="{Binding UpdateCurrentViewModelCommand}" 
+                         CommandParameter="{x:Static nav:ViewType.GeneralSettings}" />
                     </StackPanel>
                 </Expander.Content>
             </Expander>

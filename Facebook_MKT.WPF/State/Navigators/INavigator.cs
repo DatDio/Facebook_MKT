@@ -14,13 +14,13 @@ namespace Facebook_MKT.WPF.State.Navigators
 		PagePost,
 		PageInteract,
 		Group,
+		AccountInteract,
+		GeneralSettings,
 		Other
 	}
 	public interface INavigator
 	{
 		BaseViewModel CurrentViewModel { get; set; }
-		//ViewType SelectedViewType { get; set; }
-		//ICommand UpdateCurrentViewModelCommand {  get; }
 		event Action StateChanged;
 
 	}

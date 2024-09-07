@@ -9,10 +9,13 @@
         xmlns:viewmodel="clr-namespace:Facebook_MKT.WPF.ViewModels"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
+        xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+         xmlns:helpers="clr-namespace:Facebook_MKT.WPF.Helppers"
+        Title="Meta ALl In One" Height="900" Width="1400"
+        Foreground="{StaticResource foreColor}" Icon="/fb_icon.png">
+    <Window.Resources>
         
-        Title="DatDio" Height="900" Width="1400"
-        Foreground="{StaticResource foreColor}">
-   
+    </Window.Resources>
     <Grid Background="#FF0B0A0E">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>

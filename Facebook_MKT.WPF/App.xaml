@@ -3,19 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:Facebook_MKT.WPF"
+             xmlns:settingsVM="clr-namespace:Facebook_MKT.WPF.ViewModels.General_settings"
+             xmlns:accountVM="clr-namespace:Facebook_MKT.WPF.ViewModels.Accounts"
              xmlns:pageVM="clr-namespace:Facebook_MKT.WPF.ViewModels.Pages"
              xmlns:groupVM="clr-namespace:Facebook_MKT.WPF.ViewModels.Groups"
              xmlns:pageViews="clr-namespace:Facebook_MKT.WPF.Views.Pages"
              xmlns:groupViews="clr-namespace:Facebook_MKT.WPF.Views.Groups"
+             xmlns:accountViews="clr-namespace:Facebook_MKT.WPF.Views.Accounts"
+             xmlns:settingsViews="clr-namespace:Facebook_MKT.WPF.Views.GeneralSettings"
              xmlns:nav="clr-namespace:Facebook_MKT.WPF.State.Navigators"
-             xmlns:controls="clr-namespace:Facebook_MKT.WPF.Controls">
+             xmlns:controls="clr-namespace:Facebook_MKT.WPF.Controls"
+             >
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="DeepPurple" SecondaryColor="Purple" />
+                <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="DeepPurple" SecondaryColor="DeepPurple" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
                 <ResourceDictionary Source="/Assets/Styles/MainStyles.xaml"/>
-                
+                <ResourceDictionary Source="/Assets/Styles/TaskFieldTemplate/TaskFieldTemplateSelector.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- DataTemplates -->
@@ -33,9 +38,16 @@
                 <groupViews:GroupView></groupViews:GroupView>
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type accountVM:AccountInteractViewModel}">
+                <accountViews:AccountInteractView></accountViews:AccountInteractView>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type settingsVM:GeneralSettingsViewModel}">
+                <settingsViews:GeneralSettingsView></settingsViews:GeneralSettingsView>
+            </DataTemplate>
+            
             <!-- Đăng ký Converter -->
             <controls:ViewTypeToStyleConverter x:Key="ViewTypeToStyleConverter"/>
-
             <Style TargetType="Button" x:Key="SelectedButtonStyle">
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Height" Value="40"/>
@@ -59,7 +71,6 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-
 
             <!-- Style cho Button khi không được chọn -->
             <Style TargetType="Button" x:Key="DefaultButtonStyle">
@@ -92,6 +103,8 @@
                 <Setter Property="Height" Value="30"/>
                 <Setter Property="Margin" Value="0,0,0,0"/>
             </Style>
+
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

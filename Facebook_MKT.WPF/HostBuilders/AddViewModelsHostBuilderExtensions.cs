@@ -1,6 +1,8 @@
 ﻿using Facebook_MKT.WPF.State.Navigators;
 using Facebook_MKT.WPF.ViewModels;
+using Facebook_MKT.WPF.ViewModels.Accounts;
 using Facebook_MKT.WPF.ViewModels.Factories;
+using Facebook_MKT.WPF.ViewModels.General_settings;
 using Facebook_MKT.WPF.ViewModels.Groups;
 using Facebook_MKT.WPF.ViewModels.Pages;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,16 +22,20 @@ namespace Facebook_MKT.WPF.HostBuilders
 			host.ConfigureServices(services =>
 			{
 				//services.AddTransient(CreateHomeViewModel);
-				services.AddTransient<PageViewModel>();
-				services.AddTransient<PagePostViewModel>();
-				services.AddTransient<PageInteractViewModel>();
-				services.AddTransient<GroupViewModel>();
-				services.AddTransient<MainViewModel>();
+				services.AddSingleton<PageViewModel>();
+				services.AddSingleton<PagePostViewModel>();
+				services.AddSingleton<PageInteractViewModel>();
+				services.AddSingleton<GroupViewModel>();
+				services.AddSingleton<MainViewModel>();
+				services.AddSingleton<AccountInteractViewModel>();
+				services.AddSingleton<GeneralSettingsViewModel>();
 
 				services.AddSingleton<CreateViewModel<PageViewModel>>(services => () => services.GetRequiredService<PageViewModel>());
 				services.AddSingleton<CreateViewModel<PagePostViewModel>>(services => () => services.GetRequiredService<PagePostViewModel>());
 				services.AddSingleton<CreateViewModel<PageInteractViewModel>>(services => () => services.GetRequiredService<PageInteractViewModel>());
 				services.AddSingleton<CreateViewModel<GroupViewModel>>(services => () => services.GetRequiredService<GroupViewModel>());
+				services.AddSingleton<CreateViewModel<AccountInteractViewModel>>(services => () => services.GetRequiredService<AccountInteractViewModel>());
+				services.AddSingleton<CreateViewModel<GeneralSettingsViewModel>>(services => () => services.GetRequiredService<GeneralSettingsViewModel>());
 				
 				services.AddSingleton<IViewModelFactory,ViewModelFactory>();
 

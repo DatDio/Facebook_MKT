@@ -2,6 +2,7 @@
 using Facebook_MKT.Data.Services;
 using Facebook_MKT.WPF.Commands.LoadDataGrid;
 using Faceebook_MKT.Domain.Helpers.ConvertToModel;
+using Faceebook_MKT.Domain.Helpers.MappingEntites;
 using Faceebook_MKT.Domain.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,9 +26,12 @@ namespace Facebook_MKT.WPF.HostBuilders
 				services.AddScoped<IDataService<Folder>, GenericDataService<Folder>>();
 				services.AddScoped<IDataService<FolderPage>, GenericDataService<FolderPage>>();
 
+
+				services.AddAutoMapper(typeof(MappingProfile));
+
 				//services.AddSingleton<ObservableCollection<AccountModel>>();
-				services.AddSingleton<IEntityToModelConverter<Account, AccountModel>, AccountToModelConverter>();
-				services.AddSingleton<IEntityToModelConverter<Page, PageModel>, PageToModelConverter>();
+				//services.AddSingleton<IEntityToModelConverter<Account, AccountModel>, AccountToModelConverter>();
+				//services.AddSingleton<IEntityToModelConverter<Page, PageModel>, PageToModelConverter>();
 			});
 
 			return host;

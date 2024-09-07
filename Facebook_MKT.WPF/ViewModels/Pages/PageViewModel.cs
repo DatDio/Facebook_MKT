@@ -1,10 +1,12 @@
-﻿using Facebook_MKT.Data.Entities;
+﻿using AutoMapper;
+using Facebook_MKT.Data.Entities;
 using Facebook_MKT.Data.Services;
 using Facebook_MKT.WPF.Commands;
 using Facebook_MKT.WPF.Commands.LoadDataGrid;
 using Facebook_MKT.WPF.Helppers;
 using Facebook_MKT.WPF.ViewModels.Combobox;
 using Facebook_MKT.WPF.ViewModels.DataGrid;
+using Facebook_MKT.WPF.ViewModels.General_settings;
 using Faceebook_MKT.Domain.Helpers.ConvertToModel;
 using Faceebook_MKT.Domain.Models;
 using Faceebook_MKT.Domain.Services.BrowserService;
@@ -29,6 +31,7 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 	}
 	public class PageViewModel : BaseViewModel
 	{
+		private readonly GeneralSettingsViewModel _generalSettings;
 		private int _maxParallelTasks = 5; // Giá trị mặc định
 		public int MaxParallelTasks
 		{
@@ -39,27 +42,9 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 				OnPropertyChanged(nameof(MaxParallelTasks));
 			}
 		}
-		private int _scale = 1; // Giá trị mặc định
-		public int Scale
-		{
-			get { return _scale; }
-			set
-			{
-				_scale = value;
-				OnPropertyChanged(nameof(Scale));
-			}
-		}
-		//http://127.0.0.1:19995
-		private string _apiURL = "http://127.0.0.1:19995"; // Giá trị mặc định
-		public string APIURL
-		{
-			get { return _apiURL; }
-			set
-			{
-				_apiURL = value;
-				OnPropertyChanged(nameof(APIURL));
-			}
-		}
+
+
+		private List<string> _proxyList;
 
 		#region Folder, Datagrid, BrowserService
 		public FolderDataViewModel<Folder> FolderAccountsViewModel { get; }
@@ -72,72 +57,89 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 
 		public ObservableCollection<AccountModel> AccountsSeleted { get; set; } = new ObservableCollection<AccountModel>();
 
-		public PageViewModel(IDataService<Account> accountService,
+		private readonly IDataService<Account> _accountDataService;
+		private readonly IMapper _mapper;
+		public PageViewModel(GeneralSettingsViewModel generalSettings,
+							IDataService<Account> accountDataService,
 							IDataService<Folder> folderAccountService,
 							IDataService<FolderPage> folderPageService,
-							IEntityToModelConverter<Account, AccountModel> accountToModelConverter)
+								//IEntityToModelConverter<Account, AccountModel> accountToModelConverter
+								IMapper mapper
+							)
 		{
+			_generalSettings = generalSettings;
+			int _scale = _generalSettings.Scale;
+			string _apiGPMUrl = _generalSettings.APIURL;
+			_proxyList = new List<string>();
+			_mapper = mapper;
+			_accountDataService = accountDataService;
 			#region Hiện Folder
 			FolderAccountsViewModel = new FolderDataViewModel<Folder>(folderAccountService);
 			FolderPagesViewModel = new FolderDataViewModel<FolderPage>(folderPageService);
 			FolderAccountsViewModel.FolderChanged += OnFolderChanged;
 			#endregion
 
-			DataGridAccountViewModel = new DataGridAccountViewModel(accountService,
+			DataGridAccountViewModel = new DataGridAccountViewModel(accountDataService,
 										AccountsSeleted,
-										accountToModelConverter,
+										//accountToModelConverter,
+										_mapper,
 										FolderAccountsViewModel);
 
-			StartCommand = new RelayCommand(ExecuteStartCommand);
-
-		}
-		private async void ExecuteStartCommand()
-		{
-			var parallelOptions = new ParallelOptions
+			#region StartCommand
+			StartCommand = new RelayCommand<object>((a) =>
 			{
-				MaxDegreeOfParallelism = MaxParallelTasks // Sử dụng giá trị từ NumericUpDown
-			};
-
-			await Task.Run(() =>
+				return true;
+			}, async (a) =>
 			{
-				Parallel.ForEach(AccountsSeleted, parallelOptions, account =>
+				var parallelOptions = new ParallelOptions
 				{
-					string position = BrowserPositionHelper.GetNewPosition(800, 800, Scale);
-					BrowserService = new BrowserService(account);
+					MaxDegreeOfParallelism = MaxParallelTasks // Sử dụng giá trị từ NumericUpDown
+				};
 
-					for(int i = 0; i < 100; i++)
+				await Task.Run(() =>
+				{
+					Parallel.ForEach(AccountsSeleted, parallelOptions, async account =>
 					{
-						account.Status = $"Test update UI {i}";
-						Thread.Sleep(2000);
-					}
-					// Khởi động ChromeDriver cho account
-					account.Driver = BrowserService.OpenChromeGpm(_apiURL,
-																account.GPMID, account.UID,
-																account.UserAgent, scale: Scale,
-																account.Proxy, position: position);
-					// Kiểm tra nếu Driver được khởi động thành công
-					if (account.Driver != null)
-					{
-						// Thực hiện các thao tác với account
+						string position = BrowserPositionHelper.GetNewPosition(800, 800, _scale);
+						BrowserService = new BrowserService(account, _accountDataService, mapper);
+
+						for (int i = 0; i < 100; i++)
+						{
+							account.Status = $"Test update UI {i}";
+							Thread.Sleep(2000);
+						}
+						// Khởi động ChromeDriver cho account
+						account.Driver = await BrowserService.OpenChromeGpm(_apiGPMUrl,
+																   account.GPMID, account.UID,
+																   account.UserAgent, scale: _scale,
+																   account.Proxy, position: position);
+						// Kiểm tra nếu Driver được khởi động thành công
+						if (account.Driver != null)
+						{
+							// Thực hiện các thao tác với account
 
 
-						// Thao tác xử lý account
-						var t = "ádggsdgsd";
-						MessageBox.Show("sghjdfgfd");
+							// Thao tác xử lý account
+							var t = "ádggsdgsd";
+							MessageBox.Show("sghjdfgfd");
 
 
-						// Giải phóng tài nguyên
-						account.Driver.Quit();
-						account.Driver = null; // Đặt lại Driver để giải phóng tài nguyên
-					}
-					else
-					{
-						MessageBox.Show($"Không thể khởi động trình duyệt cho tài khoản {account.UID}");
-					}
+							// Giải phóng tài nguyên
+							account.Driver.Quit();
+							account.Driver = null; // Đặt lại Driver để giải phóng tài nguyên
+						}
+						else
+						{
+							MessageBox.Show($"Không thể khởi động trình duyệt cho tài khoản {account.UID}");
+						}
+					});
 				});
-			});
 
+				MessageBox.Show("Tool đã dừng!");
+			});
+			#endregion
 		}
+
 
 
 

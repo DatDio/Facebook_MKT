@@ -16,27 +16,14 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using static MaterialDesignThemes.Wpf.Theme;
+using AutoMapper;
+using System.Windows.Documents;
 namespace Facebook_MKT.WPF.ViewModels.DataGrid
 {
 
 	public class DataGridAccountViewModel : BaseSelectableViewModel<AccountModel>
 	{
-		private bool _isAllItemsSelected = true;
-		public bool IsAllItemsSelected
-		{
-			get { return _isAllItemsSelected; }
-			set
-			{
-				_isAllItemsSelected = value;
-				OnPropertyChanged(nameof(IsAllItemsSelected));
-
-				// Cập nhật tất cả các AccountModel
-				foreach (var account in Items)
-				{
-					account.IsSelected = _isAllItemsSelected;
-				}
-			}
-		}
+		
 
 
 		//public   ObservableCollection<AccountModel> AccountsSeleted { get; set; }
@@ -47,33 +34,72 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 
 		private readonly IEntityToModelConverter<Account, AccountModel> _accountToModelConverter;
 
-		private readonly FolderDataViewModel<Folder> _folderDataViewModel;
+		private readonly FolderDataViewModel<Folder> _folderAccountViewModel;
 
+		private readonly IMapper _mapper;
+		//private readonly ObservableCollection<AccountModel> _AccountsSeleted;
 		public ICommand AddAccountCommand { get; set; }
+		public ICommand DeleteAccountCommand { get; set; }
+		public ICommand SaveAccountCommand { get; set; }
+		public ICommand OpenBrowserCommand { get; set; }
+		public ICommand AddProxyCommand { get; set; }
 		public ICommand SelectedOrUnSelectedCommand { get; }
-		public BaseCommand LoadDataGridAccountCommand { get; set; }
-
-
+		public ICommand LoadDataGridAccountCommand { get; set; }
 		public DataGridAccountViewModel(IDataService<Account> dataService,
 									ObservableCollection<AccountModel> AccountsSeleted,
-									IEntityToModelConverter<Account, AccountModel> accountToModelConverter,
+									//IEntityToModelConverter<Account, AccountModel> accountToModelConverter,
+									IMapper mapper,
 									FolderDataViewModel<Folder> folderDataViewModel)
 
 		{
 			_dataService = dataService;
-			_accountToModelConverter = accountToModelConverter;
-			_folderDataViewModel = folderDataViewModel;
+			//_accountToModelConverter = accountToModelConverter;
+			_mapper = mapper;
+			_folderAccountViewModel = folderDataViewModel;
 			ItemsSelected = AccountsSeleted;
 			//Lấy ra từ lớp cha
 			Accounts = Items;
 
-			LoadDataGridAccountCommand = new LoadDataGridAccountCommand(_dataService,
-										Accounts,
-										ItemsSelected,
-										accountToModelConverter,
-										_folderDataViewModel);
+			//LoadDataGridAccountCommand = new LoadDataGridAccountCommand(_dataService,
+			//							Accounts,
+			//							ItemsSelected,
+			//							accountToModelConverter,
+			//							_folderDataViewModel);
+			//LoadDataGridAccountCommand.Execute(1);
+
+			#region LoadDataGridAccountCommand
+			LoadDataGridAccountCommand = new RelayCommand<object>((p) =>
+			{
+				return true;
+
+			}, async (p) =>
+			{
+				// Lấy FolderIdKey từ SelectedItem trong ViewModel
+				var folderidKey = _folderAccountViewModel.SelectedItem?.FolderIdKey;
+
+				if (folderidKey.HasValue)
+				{
+					// Lấy dữ liệu dựa trên FolderIdKey
+					var data = await _dataService.GetByFolderIdKey(folderidKey.Value);
+
+					// Xóa dữ liệu cũ
+					Accounts.Clear();
+					AccountsSeleted.Clear();
+
+					// Sử dụng AutoMapper để map từ entity sang model
+					var accountModels = _mapper.Map<List<AccountModel>>(data);
+
+					// Thêm các model vào danh sách Accounts
+					foreach (var accountModel in accountModels)
+					{
+						Accounts.Add(accountModel);
+					}
+				}
+			});
+
 			LoadDataGridAccountCommand.Execute(1);
 
+			#endregion
 
 			#region AddAccountCommand
 			AddAccountCommand = new RelayCommand<AddAccountType>((a) =>
@@ -106,7 +132,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 									UID = item[0].Trim(),
 									Password = item[1].Trim(),
 									C_2FA = item[2].Trim(),
-									FolderIdKey = _folderDataViewModel._selectedItem.FolderIdKey,
+									FolderIdKey = _folderAccountViewModel._selectedItem.FolderIdKey,
 									// Thêm các thuộc tính khác nếu cần thiết
 								});
 							}
@@ -148,10 +174,10 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 			#endregion
 
 
-
 			#region SelectedOrUnSelectedCommand
 			SelectedOrUnSelectedCommand = new RelayCommand<System.Windows.Controls.DataGrid>((dataGrid) =>
 			{
+				return dataGrid != null && dataGrid.SelectedItems.Count > 0;
 				return true;
 			},
 			(dataGrid) =>
@@ -174,34 +200,77 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 			);
 			#endregion
 
-
-
-
-			//SelectedOrUnSelectedCommand = new RelayCommand<System.Windows.Controls.DataGrid>(ExecuteSelectedOrUnSelectedCommand);
-			//LoadDataToDataGridCommand = new RelayCommand<int>(LoadData);
-		}
-
-
-
-		#region SelectedOrUnSelectedCommand
-		private void ExecuteSelectedOrUnSelectedCommand(System.Windows.Controls.DataGrid dataGrid)
-		{
-			if (dataGrid != null && dataGrid.SelectedItems.Count > 0)
+			#region DeleteAccountCommand
+			DeleteAccountCommand = new RelayCommand<object>((a) =>
 			{
-				// Lấy các tài khoản đang được bôi đen
-				var selectedAccounts = dataGrid.SelectedItems.Cast<AccountModel>().ToList();
-
-				// Cập nhật trạng thái IsSelected
-				foreach (var account in selectedAccounts)
+				return true;
+			},
+			async (a) =>
+			{
+				foreach(var account in ItemsSelected)
 				{
-					account.IsSelected = !account.IsSelected; // Đổi trạng thái
+					await _dataService.Delete(account.AccountIDKey);
 				}
+			});
+			#endregion
 
-				// Thông báo rằng danh sách đã thay đổi
-				OnPropertyChanged(nameof(Accounts)); // Giả sử Accounts là ObservableCollection<AccountModel>
-			}
+			#region SaveAccountCommand
+			SaveAccountCommand = new RelayCommand<object>((a) =>
+			{
+				return true;
+			},
+			async (a) =>
+			{
+				foreach (var accountModel in ItemsSelected)
+				{
+					var accountEntity =  _mapper.Map<Account>(accountModel);
+					await _dataService.Update(accountEntity.AccountIDKey, accountEntity);
+				}
+			});
+			#endregion
+
+			#region OpenBrowserCommand
+			OpenBrowserCommand = new RelayCommand<object>((a) =>
+			{
+				return true;
+			},
+			async (a) =>
+			{
+				foreach (var accountModel in ItemsSelected)
+				{
+					var accountEntity = _mapper.Map<Account>(accountModel);
+					await _dataService.Update(accountEntity.AccountIDKey, accountEntity);
+				}
+			});
+			#endregion
+
+			#region AddProxyCommand
+			AddProxyCommand = new RelayCommand<object>((a) =>
+			{
+				return true;
+			},
+			async (a) =>
+			{
+				// Mở ProxyWindow để người dùng nhập Proxy
+				ProxyWindow proxyWindow = new ProxyWindow();
+				bool? result = proxyWindow.ShowDialog();
+				if (result == true)
+				{
+					List<string> proxy = proxyWindow.Proxy;
+
+					// Cập nhật Proxy cho từng AccountModel được chọn
+					foreach (var accountModel in ItemsSelected)
+					{
+						accountModel.Proxy = proxy[0];
+						proxy.RemoveAt(0);
+						proxy.Add(accountModel.Proxy);
+						var accountEntity = _mapper.Map<Account>(accountModel);
+						await _dataService.Update(accountEntity.AccountIDKey, accountEntity);
+					}
+					MessageBox.Show("Thao tác thành công");
+				}
+			});
+			#endregion
 		}
-		#endregion
-
 	}
 }

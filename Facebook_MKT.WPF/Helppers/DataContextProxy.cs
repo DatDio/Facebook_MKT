@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Faceebook_MKT.Domain.Helpers
+namespace Facebook_MKT.WPF.Helppers
 {
 	public class DataContextProxy : Freezable
 	{
