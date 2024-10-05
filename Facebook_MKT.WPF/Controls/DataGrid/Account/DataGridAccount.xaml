@@ -5,15 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid.Account"
              xmlns:context="clr-namespace:Facebook_MKT.WPF.ViewModels.DataGrid"
+             xmlns:VisibilityConverter="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid"
              xmlns:accType="clr-namespace:Facebook_MKT.WPF.ViewModels.Pages"
              xmlns:datagridAccVM="clr-namespace:Facebook_MKT.WPF.ViewModels.DataGrid"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+            
              mc:Ignorable="d" 
              x:Name="myUserControl"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <!-- Style for DataGridColumnHeader -->
-        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <VisibilityConverter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <Style x:Key="FadeInAnimationStyle" TargetType="StackPanel">
             <Style.Triggers>
                 <Trigger Property="Visibility" Value="Visible">
@@ -28,6 +29,8 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+      
     </UserControl.Resources>
 
     <Grid Background="Transparent">
@@ -45,12 +48,16 @@
     HorizontalAlignment="Left" Margin="20,0,0,10">
             <Button Margin="0,0,10,0" Background="Transparent" Content="Xóa" 
                     Command="{Binding DeleteAccountCommand}" />
-            <Button Background="Transparent" Content="Lưu" 
+            <Button Background="Transparent" Content="Lưu thay đổi" 
                     Command="{Binding SaveAccountCommand}" Margin="0,0,10,0"/>
             <Button Background="Transparent" Content="Mở Trình Duyệt" 
                     Command="{Binding OpenBrowserCommand}" Margin="0,0,10,0"/>
             <Button Background="Transparent" Content="Thêm Proxy"
                     Command="{Binding AddProxyCommand}" Margin="0,0,10,0"/>
+            <Button Background="Transparent" Content="Chuyển thư mục"
+         Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
+            <Button Background="Transparent" Content="Get all page"
+Command="{Binding GetAllPageCommand}" Margin="0,0,10,0"/>
         </StackPanel>
 
 
@@ -63,12 +70,11 @@
                 HeadersVisibility="All"
                 CanUserSortColumns="True"
                 ItemsSource="{Binding Accounts}"
-                SelectionUnit="FullRow"
                 Background="Transparent"
                 BorderThickness="0"
                 BorderBrush="Transparent"
                 RowHeight="45"
-              
+                SelectionUnit="FullRow"
                 SelectionMode="Extended"
                 RowHeaderWidth="0"
                 ColumnHeaderStyle="{StaticResource BoldHeaderStyle}">
@@ -84,9 +90,11 @@
                     CanUserResize="True">
                     <DataGridCheckBoxColumn.Header>
                         <CheckBox Margin="30,0,0,0"
-          IsChecked="{Binding IsAllItemsSelected, Mode=TwoWay}"
-          Checked="CheckBox_Checked"
-          Unchecked="CheckBox_Unchecked" />
+                                 Checked="CheckBox_Checked"
+          Unchecked="CheckBox_Unchecked"/>
+                        <!--IsChecked="{Binding DataContext.IsAllItemsSelected, 
+RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
+Mode=TwoWay}"-->
                         <!--<TextBlock Text="{Binding DataContext.IsAllItemsSelected, 
             RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />-->
                     </DataGridCheckBoxColumn.Header>
@@ -98,7 +106,8 @@
                 <DataGridTextColumn
                     ElementStyle="{StaticResource CommonDataGridTextStyle}"
                           Header="UID"
-                            Width="180">
+                            Width="180"
+                     IsReadOnly="True">
                     <DataGridTextColumn.EditingElementStyle>
                     <Style TargetType="TextBox">
                         <Setter Property="Background" Value="WhiteSmoke"/>
@@ -144,6 +153,34 @@
                             <Binding.ValidationRules>
                                 <!--<domain:NotEmptyValidationRule
          xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                
+                <!-- Column for Account Password -->
+                <DataGridTextColumn
+            ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="C_2FA"
+           Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="C_2FA">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
                             </Binding.ValidationRules>
                         </Binding>
                     </DataGridTextColumn.Binding>
@@ -261,6 +298,32 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+           ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="Folder"
+            Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="AccountFolderName">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn
                     ElementStyle="{StaticResource CommonDataGridTextStyle}"
                      Header="Token"
                      Width="180">
@@ -285,6 +348,7 @@
                         </Binding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
+                
                 <DataGridTextColumn
                     ElementStyle="{StaticResource CommonDataGridTextStyle}"
                      Header="Cookie"
@@ -336,8 +400,35 @@
                         </Binding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-            </DataGrid.Columns>
 
+            
+                <DataGridTextColumn
+           ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="GPMID"
+           Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="GPMID">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+           
             <!--MenuItem-->
             <DataGrid.ContextMenu >
                 <ContextMenu Background="#04021F">
@@ -360,12 +451,6 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <MenuItem Header="Edit" Command="{Binding EditCommand}">
-
-                    </MenuItem>
-                    <MenuItem Header="Delete" Command="{Binding DeleteCommand}">
-
-                    </MenuItem>
                     <MenuItem Header="Chọn / Bỏ Chọn" 
                   Command="{Binding SelectedOrUnSelectedCommand}" 
                   CommandParameter="{Binding PlacementTarget, 

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Facebook_MKT.Data\Facebook_MKT.Data.csproj" />
+    <ProjectReference Include="..\Faceebook_MKT.Domain\Faceebook_MKT.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

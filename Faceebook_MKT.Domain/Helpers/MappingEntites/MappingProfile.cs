@@ -9,12 +9,23 @@ using System.Threading.Tasks;
 
 namespace Faceebook_MKT.Domain.Helpers.MappingEntites
 {
-	public class MappingProfile:Profile
+	public class MappingProfile : Profile
 	{
 		public MappingProfile()
 		{
-			CreateMap<Account, AccountModel>().ReverseMap();
-			CreateMap<Page, PageModel>().ReverseMap();
+			CreateMap<Account, AccountModel>()
+					.ForMember(dest => dest.AccountFolderName, opt => opt.MapFrom(src => src.Folder.FolderName))
+					.ReverseMap();
+
+			CreateMap<Page, PageModel>()
+					.ForMember(dest => dest.PageFolderName, opt => opt.MapFrom(src => src.FolderPage.FolderName)) // Ánh xạ PageFolderName
+					.ReverseMap();
+
+			CreateMap<Folder, FolderModel>().ReverseMap();
+
+			CreateMap<FolderPage, FolderPageModel>().ReverseMap();
+
+			//CreateMap<FolderGroup, FolderGrModel>().ReverseMap();
 		}
 	}
 }

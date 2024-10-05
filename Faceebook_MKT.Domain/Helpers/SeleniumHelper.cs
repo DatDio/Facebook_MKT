@@ -56,6 +56,18 @@ namespace Faceebook_MKT.Domain.Helpers
 
 			}
 		}
+		public static void ScrollsArrowUp(ChromeDriver driver)
+		{
+
+			try
+			{
+				driver.FindElement(By.TagName("body")).SendKeys(Keys.ArrowUp);
+			}
+			catch
+			{
+
+			}
+		}
 		public static bool GetAttributeTym(ChromeDriver driver)
 		{
 			try

@@ -19,7 +19,7 @@ namespace Facebook_MKT.WPF
 	/// <summary>
 	/// Interaction logic for ProxyWindow.xaml
 	/// </summary>
-	public partial class ProxyWindow : Window
+	public partial class ProxyWindow : System.Windows.Window
 	{
 		public List<string> Proxy { get; private set; }
 

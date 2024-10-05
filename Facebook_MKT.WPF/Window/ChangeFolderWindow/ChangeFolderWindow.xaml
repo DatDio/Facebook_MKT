@@ -1,0 +1,37 @@
+﻿<Window x:Class="Facebook_MKT.WPF.Window.ChangeFolderWindow.ChangeFolderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Facebook_MKT.WPF.Window.ChangeFolderWindow"
+        mc:Ignorable="d"
+         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:cbbFolder="clr-namespace:Facebook_MKT.WPF.Controls.FolderControls"
+        WindowStartupLocation="CenterScreen"
+        Title="Chuyển thư mục" Height="170" Width="300">
+    <Grid Background="{StaticResource backgroundColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ComboBox 
+            Margin="0,20,0,0"
+            Foreground="White"
+         Grid.Row="0"
+         Width="200"
+         FontSize="14"
+         materialDesign:HintAssist.Hint="Chọn thư mục"
+         Style="{StaticResource MaterialDesignOutlinedComboBox}"
+         ItemsSource="{Binding _itemsFolder}"
+         SelectedItem="{Binding SelectedItem}">
+            <ComboBox.ItemTemplate >
+                <DataTemplate >
+                    <TextBlock  Text="{Binding FolderName}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Grid.Row="1" HorizontalAlignment="Center" 
+                Content="Áp Dụng" Margin="10" 
+                Command="{Binding ChangeFolderCommand}"></Button>
+    </Grid>
+</Window>

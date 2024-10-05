@@ -7,18 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="BrowserController\Handlers\" />
-    <Folder Include="Helpers\ConvertModelToEntity\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Leaf.xNet" Version="5.2.10" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.47.0" />
     <PackageReference Include="Otp.NET" Version="1.4.0" />
+    <PackageReference Include="RestSharp" Version="112.0.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.23.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Facebook_MKT.API\Facebook_MKT.API.csproj" />
     <ProjectReference Include="..\Facebook_MKT.Data\Facebook_MKT.Data.csproj" />
   </ItemGroup>
 

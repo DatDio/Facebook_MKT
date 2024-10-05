@@ -24,11 +24,24 @@ namespace Faceebook_MKT.Domain.Models
 		private string? _token;
 		private string? _cookie;
 		private string? _status;
+		private string? _accountFolderName;
 		private string? _proxy;
 		private string? _userAgent;
 		private string? _gpmId;
 		private int _folderIdKey;
-
+		private List<PageModel> _listPageModels;
+		public List<PageModel> Pages
+		{
+			get
+			{
+				return _listPageModels;
+			}
+			set
+			{
+				_listPageModels = value;
+				OnPropertyChanged(nameof(Pages));
+			}
+		}
 		public ChromeDriver Driver
 		{
 			get { return _driver; }
@@ -41,16 +54,27 @@ namespace Faceebook_MKT.Domain.Models
 				}
 			}
 		}
-		private Color _rowColor;
-		public Color RowColor
-		{
-			get => _rowColor;
+
+		private string _textColor;
+		public string TextColor {
+			get => _textColor;
 			set
 			{
-				_rowColor = value;
-				OnPropertyChanged(nameof(RowColor));
+				_textColor = value;
+				OnPropertyChanged(nameof(TextColor));
 			}
 		}
+		//private Color _rowColor;
+		//public Color RowColor
+		//{
+		//	get => _rowColor;
+		//	set
+		//	{
+		//		_rowColor = value;
+		//		OnPropertyChanged(nameof(RowColor));
+		//	}
+		//}
+
 		public string? UID
 		{
 			get { return _uid; }
@@ -73,6 +97,18 @@ namespace Faceebook_MKT.Domain.Models
 				{
 					_password = value;
 					OnPropertyChanged(nameof(Password));
+				}
+			}
+		}
+		public string? AccountFolderName
+		{
+			get { return _accountFolderName; }
+			set
+			{
+				if (_accountFolderName != value)
+				{
+					_accountFolderName = value;
+					OnPropertyChanged(nameof(AccountFolderName));
 				}
 			}
 		}
@@ -244,6 +280,13 @@ namespace Faceebook_MKT.Domain.Models
 					OnPropertyChanged(nameof(IsSelected));
 				}
 			}
+		}
+
+
+		public List<PageModel> GetSelectedPages()
+		{
+			var pageSelected = Pages.Where(page => page.IsSelected).ToList();
+			return Pages.Where(page => page.IsSelected).ToList();
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

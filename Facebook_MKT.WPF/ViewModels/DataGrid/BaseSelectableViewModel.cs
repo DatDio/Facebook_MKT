@@ -1,4 +1,7 @@
-﻿using Faceebook_MKT.Domain.Models;
+﻿using AutoMapper;
+using Facebook_MKT.Data.Entities;
+using Facebook_MKT.WPF.ViewModels.General_settings;
+using Faceebook_MKT.Domain.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 namespace Facebook_MKT.WPF.ViewModels.DataGrid
@@ -6,6 +9,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 	public abstract class BaseSelectableViewModel<T> : BaseViewModel
 	   where T : class, INotifyPropertyChanged, ISelectable
 	{
+
 		private bool _isAllItemsSelected = false;
 		public bool IsAllItemsSelected
 		{
@@ -20,6 +24,20 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 				{
 					account.IsSelected = _isAllItemsSelected;  // Cập nhật IsSelected cho mỗi mục
 				}
+			}
+		}
+
+		private int _totalRows;
+		public int TotalRows
+		{
+			get
+			{
+				return _totalRows;
+			}
+			set
+			{
+				_totalRows = value;
+				OnPropertyChanged(nameof(TotalRows));
 			}
 		}
 
@@ -70,6 +88,8 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 
 			// Cập nhật khi Items thay đổi
 			OnPropertyChanged(nameof(Items));
+			TotalRows = Items?.Count ?? 0;
+			OnPropertyChanged(nameof(TotalRows));
 		}
 
 		private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)

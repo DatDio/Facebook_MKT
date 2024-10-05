@@ -7,12 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="FacebookAPI\" />
+    <PackageReference Include="Leaf.xNet" Version="5.2.10" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Leaf.xNet" Version="5.2.10" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <ProjectReference Include="..\Facebook_MKT.Data\Facebook_MKT.Data.csproj" />
+    <ProjectReference Include="..\Faceebook_MKT.Domain\Faceebook_MKT.Domain.csproj" />
   </ItemGroup>
 
 </Project>

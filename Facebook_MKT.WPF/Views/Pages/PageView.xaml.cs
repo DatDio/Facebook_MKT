@@ -24,5 +24,15 @@ namespace Facebook_MKT.WPF.Views.Pages
         {
             InitializeComponent();
         }
-    }
+		private void Expander_Expanded(object sender, RoutedEventArgs e)
+		{
+			ExpanderContent.Visibility = Visibility.Visible;
+		}
+
+		private void Expander_Collapsed(object sender, RoutedEventArgs e)
+		{
+			ExpanderContent.Visibility = Visibility.Collapsed;
+		}
+
+	}
 }

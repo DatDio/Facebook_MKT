@@ -1,0 +1,77 @@
+﻿<Window x:Class="Facebook_MKT.WPF.Window.SetupPostWindow.SetupPostWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Facebook_MKT.WPF.Window.SetupPostWindow"
+        mc:Ignorable="d"
+         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="SetupPostWindow" Height="550" Width="800">
+    <StackPanel Background="{StaticResource backgroundColor}">
+        <TextBox Text="{Binding Title, Mode=TwoWay}" 
+         AcceptsReturn="True" 
+         Padding="12" FontSize="16" 
+                 TextWrapping="Wrap" 
+         Margin="40,20,40,10" 
+         Height="200" 
+         Foreground="White"/>
+
+
+        <ListBox x:Name="MediaListBox" 
+                 Margin="40,0,40,0"
+             ItemsSource="{Binding MediaFiles}" 
+             ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical" Margin="0">
+                        <Grid Width="100" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Hiển thị thumbnail của video -->
+                            <Image Source="{Binding ThumbnailPath}" 
+                       Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Stretch="UniformToFill"/>
+
+                            <!-- Hiển thị biểu tượng nếu là video -->
+                            <materialDesign:PackIcon Kind="ArrowRightDropCircleOutline" 
+                                           Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" 
+                                           Width="40" 
+                                           Height="40" 
+                                           Foreground="White" />
+
+                            <!-- Hiển thị ảnh nếu là hình ảnh -->
+                            <Image Source="{Binding FilePath}" 
+                       Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Stretch="UniformToFill"/>
+                        </Grid>
+
+                        <Button Content="Xóa" 
+                    Command="{Binding DataContext.RemoveFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    CommandParameter="{Binding}" 
+                    Foreground="White" 
+                    Background="Transparent" 
+                    x:Name="RemoveButton" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+
+        </ListBox>
+        <StackPanel Margin="60,0,60,0">
+            <Button Foreground="White" Content="Thêm File" Command="{Binding SelectFileCommand}" HorizontalAlignment="Center" Margin="10" />
+            <Button Foreground="White" 
+                    Content="Lưu Post" 
+                    HorizontalAlignment="Center" 
+                    Margin="10" 
+                    Command="{Binding ConfirmCommand}"/>
+        </StackPanel>
+       
+    </StackPanel>
+
+
+</Window>

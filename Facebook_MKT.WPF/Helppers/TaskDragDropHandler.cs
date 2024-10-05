@@ -44,13 +44,7 @@ namespace Facebook_MKT.WPF.Helppers
 
 			if (oldIndex == -1)
 			{
-				// Nếu là một mục mới, bạn có thể tạo một bản sao của sourceItem
-				var newTaskItem = new TaskModel
-				{
-					Index = insertIndex + 1,
-					TaskName = sourceItem.TaskName,
-					Fields = sourceItem.Fields.ToList() // Sao chép danh sách các trường
-				};
+				var newTaskItem = CloneTaskModel(sourceItem);
 				_taskList.Insert(insertIndex, newTaskItem);
 			}
 			else
@@ -65,6 +59,7 @@ namespace Facebook_MKT.WPF.Helppers
 			UpdateIndices();
 		}
 
+
 		private void UpdateIndices()
 		{
 			for (int i = 0; i < _taskList.Count; i++)
@@ -74,6 +69,41 @@ namespace Facebook_MKT.WPF.Helppers
 					taskModel.Index = i + 1; // Cập nhật chỉ số
 				}
 			}
+		}
+		// Hàm sao chép sâu TaskModel
+		private TaskModel CloneTaskModel(TaskModel original)
+		{
+			return new TaskModel
+			{
+				Index = _taskList.Count + 1, // Gán chỉ số mới
+				TaskName = original.TaskName,
+				Fields = original.Fields.Select(field => CloneTaskField(field)).ToList() // Sao chép các trường
+			};
+		}
+
+		// Hàm sao chép sâu từng TaskField và MediaFileModel nếu có
+		private TaskField CloneTaskField(TaskField original)
+		{
+			var clonedField = new TaskField(original.Label, original.FieldType);
+
+			// Nếu Value là ObservableCollection, tạo bản sao mới
+			if (original.Value is ObservableCollection<MediaFileModel> mediaFiles)
+			{
+				clonedField.Value = new ObservableCollection<MediaFileModel>(mediaFiles.Select(m => new MediaFileModel
+				{
+					FilePath = m.FilePath,
+					IsImage = m.IsImage,
+					IsVideo = m.IsVideo,
+					ThumbnailPath = m.ThumbnailPath
+				}));
+			}
+			else
+			{
+				// Nếu Value không phải ObservableCollection, sao chép giá trị bình thường
+				clonedField.Value = original.Value;
+			}
+
+			return clonedField;
 		}
 	}
 }

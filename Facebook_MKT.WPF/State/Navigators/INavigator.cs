@@ -18,6 +18,7 @@ namespace Facebook_MKT.WPF.State.Navigators
 		GeneralSettings,
 		Other
 	}
+
 	public interface INavigator
 	{
 		BaseViewModel CurrentViewModel { get; set; }

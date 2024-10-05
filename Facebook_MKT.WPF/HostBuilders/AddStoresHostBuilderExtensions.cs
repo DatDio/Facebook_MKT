@@ -16,9 +16,6 @@ namespace Facebook_MKT.WPF.HostBuilders
 			host.ConfigureServices(services =>
 			{
 				services.AddSingleton<INavigator, Navigator>();
-				//services.AddSingleton<IAuthenticator, Authenticator>();
-				//services.AddSingleton<IAccountStore, AccountStore>();
-				//services.AddSingleton<AssetStore>();
 			});
 
 			return host;

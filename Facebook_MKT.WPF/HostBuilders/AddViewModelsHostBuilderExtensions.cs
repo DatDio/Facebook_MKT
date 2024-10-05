@@ -1,6 +1,10 @@
-﻿using Facebook_MKT.WPF.State.Navigators;
+﻿using Facebok_MKT.Service.Controller.BrowserController;
+using Facebook_MKT.Data.Entities;
+using Facebook_MKT.WPF.State.Navigators;
 using Facebook_MKT.WPF.ViewModels;
 using Facebook_MKT.WPF.ViewModels.Accounts;
+using Facebook_MKT.WPF.ViewModels.Combobox;
+using Facebook_MKT.WPF.ViewModels.DataGrid;
 using Facebook_MKT.WPF.ViewModels.Factories;
 using Facebook_MKT.WPF.ViewModels.General_settings;
 using Facebook_MKT.WPF.ViewModels.Groups;
@@ -21,38 +25,32 @@ namespace Facebook_MKT.WPF.HostBuilders
 		{
 			host.ConfigureServices(services =>
 			{
-				//services.AddTransient(CreateHomeViewModel);
-				services.AddSingleton<PageViewModel>();
-				services.AddSingleton<PagePostViewModel>();
-				services.AddSingleton<PageInteractViewModel>();
-				services.AddSingleton<GroupViewModel>();
-				services.AddSingleton<MainViewModel>();
-				services.AddSingleton<AccountInteractViewModel>();
-				services.AddSingleton<GeneralSettingsViewModel>();
+				services.AddScoped<PageViewModel>();
+				services.AddScoped<PagePostViewModel>();
+				services.AddScoped<PageInteractViewModel>();
+				services.AddScoped<GroupViewModel>();
+				services.AddScoped<MainViewModel>();
+				services.AddScoped<AccountInteractViewModel>();
+				services.AddScoped<GeneralSettingsViewModel>();
+				//services.AddSingleton<FolderAccountViewModel>();
+				//services.AddSingleton<FolderPageViewModel>();
 
-				services.AddSingleton<CreateViewModel<PageViewModel>>(services => () => services.GetRequiredService<PageViewModel>());
-				services.AddSingleton<CreateViewModel<PagePostViewModel>>(services => () => services.GetRequiredService<PagePostViewModel>());
-				services.AddSingleton<CreateViewModel<PageInteractViewModel>>(services => () => services.GetRequiredService<PageInteractViewModel>());
-				services.AddSingleton<CreateViewModel<GroupViewModel>>(services => () => services.GetRequiredService<GroupViewModel>());
-				services.AddSingleton<CreateViewModel<AccountInteractViewModel>>(services => () => services.GetRequiredService<AccountInteractViewModel>());
-				services.AddSingleton<CreateViewModel<GeneralSettingsViewModel>>(services => () => services.GetRequiredService<GeneralSettingsViewModel>());
+				services.AddScoped<CreateViewModel<BaseViewModel>>(services => () => services.GetRequiredService<BaseViewModel>());
+
+				services.AddScoped<CreateViewModel<PageViewModel>>(services => () => services.GetRequiredService<PageViewModel>());
+				services.AddScoped<CreateViewModel<PagePostViewModel>>(services => () => services.GetRequiredService<PagePostViewModel>());
+				services.AddScoped<CreateViewModel<PageInteractViewModel>>(services => () => services.GetRequiredService<PageInteractViewModel>());
+				services.AddScoped<CreateViewModel<GroupViewModel>>(services => () => services.GetRequiredService<GroupViewModel>());
+				services.AddScoped<CreateViewModel<AccountInteractViewModel>>(services => () => services.GetRequiredService<AccountInteractViewModel>());
+				services.AddScoped<CreateViewModel<GeneralSettingsViewModel>>(services => () => services.GetRequiredService<GeneralSettingsViewModel>());
 				
 				services.AddSingleton<IViewModelFactory,ViewModelFactory>();
 
-				services.AddSingleton<ViewModelDelegateRenavigator<PageViewModel>>();
-				//services.AddSingleton<ViewModelDelegateRenavigator<LoginViewModel>>();
-				//services.AddSingleton<ViewModelDelegateRenavigator<RegisterViewModel>>();
+				//services.AddSingleton<ViewModelDelegateRenavigator<PageViewModel>>();
 			});
 
 			return host;
 		}
-
-		//private static PageViewModel CreateHomeViewModel(IServiceProvider services)
-		//{
-		//	return new PageViewModel(
-		//		services.GetRequiredService<AssetSummaryViewModel>(),
-		//		MajorIndexListingViewModel.LoadMajorIndexViewModel(services.GetRequiredService<IMajorIndexService>()));
-		//}
 		
 	}
 }

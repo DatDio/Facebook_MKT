@@ -50,10 +50,10 @@
             <controls:ViewTypeToStyleConverter x:Key="ViewTypeToStyleConverter"/>
             <Style TargetType="Button" x:Key="SelectedButtonStyle">
                 <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Height" Value="40"/>
+                <Setter Property="Height" Value="50"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="FontSize" Value="16"/>
-                <Setter Property="Background" Value="{StaticResource backgroundColor}"/>
+                <Setter Property="Background" Value="Black"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
@@ -75,7 +75,7 @@
             <!-- Style cho Button khi không được chọn -->
             <Style TargetType="Button" x:Key="DefaultButtonStyle">
                 <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Height" Value="40"/>
+                <Setter Property="Height" Value="50"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="FontSize" Value="16"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -100,7 +100,7 @@
             
             <Style TargetType="materialDesign:PackIcon" x:Key="CustomPackIconStyle">
                 <Setter Property="Width" Value="50"/>
-                <Setter Property="Height" Value="30"/>
+                <Setter Property="Height" Value="40"/>
                 <Setter Property="Margin" Value="0,0,0,0"/>
             </Style>
 

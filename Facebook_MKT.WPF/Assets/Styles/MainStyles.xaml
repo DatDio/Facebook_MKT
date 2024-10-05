@@ -59,6 +59,10 @@
                 <Setter Property="Background" Value="DarkRed" />
                 <Setter Property="Foreground" Value="{StaticResource foreColor}" />
             </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+                <!-- Mờ đi khi vô hiệu -->
+            </Trigger>
         </Style.Triggers>
     </Style>
 
@@ -135,6 +139,17 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding TextColor}" Value="RowColorFail">
+                <Setter Property="Foreground" Value="OrangeRed" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding TextColor}" Value="RowColorRunning">
+                <Setter Property="Foreground" Value="Orange" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding TextColor}" Value="RowColorSuccess">
+                <Setter Property="Foreground" Value="LawnGreen" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     

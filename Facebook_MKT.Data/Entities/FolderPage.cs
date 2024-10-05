@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Facebook_MKT.Data.Entities
 {
-	public class FolderPage
+	public class FolderPage 
 	{
 		public FolderPage()
 		{
-			Accounts = new HashSet<Account>();
+			//Accounts = new HashSet<Account>();
 			Pages = new HashSet<Page>();
 		}
 		public int FolderIdKey { get; set; }
 		public string FolderName { get; set; }
-		public virtual ICollection<Account> Accounts { get; set; }
+		//public virtual ICollection<Account> Accounts { get; set; }
 		public virtual ICollection<Page> Pages { get; set; }
 	}
 }

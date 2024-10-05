@@ -17,20 +17,24 @@ namespace Facebook_MKT.Data
 		public DbSet<Account> Accounts { get; set; }
 		public DbSet<Page> Pages { get; set; }
 		public DbSet<Folder> Folders { get; set; }
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			var path = Path.GetFullPath("FacebookMKT.db");
-			optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
-		}
+		public DbSet<FolderPage> FolderPage { get; set; }
+
+		//protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		//{
+		//	var path = Path.GetFullPath("FacebookMKT.db");
+		//	optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
+		//}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			// Cấu hình cho Account
 			modelBuilder.Entity<Account>(entity =>
 			{
-				entity.HasKey(a => a.AccountIDKey);
-				entity.Property(a => a.AccountIDKey).ValueGeneratedOnAdd();
+				entity.HasKey(p => p.AccountIDKey);
+				entity.Property(p => p.AccountIDKey).ValueGeneratedOnAdd();
 				entity.Property(a => a.UID);
+				entity.Property(a => a.UID).IsRequired();
+				entity.HasIndex(a => a.UID).IsUnique();
 				entity.Property(a => a.Password);
 				entity.Property(a => a.C_2FA);
 				entity.Property(a => a.Email1);
@@ -48,34 +52,15 @@ namespace Facebook_MKT.Data
 				entity.HasOne(a => a.Folder)
 						.WithMany(f => f.Accounts)
 						.HasForeignKey(a => a.FolderIdKey);
-				entity.HasData(
-					new Account
-					{
-						AccountIDKey = 1,
-						UID="47812389",
-						Password="qưerfuhsdiuvsd",
-						C_2FA="eghjdsjkgsdhg",
-						FolderIdKey = 1
-
-
-					},
-					new Account
-					{
-						AccountIDKey = 2,
-						UID = "47812389sdfgsdg",
-						Password = "passcfb",
-						C_2FA = "eghjdsjksgsdggsdhg",
-						FolderIdKey = 1
-					}
-					);
+				
 			});
 
 			// Cấu hình cho Page
 			modelBuilder.Entity<Page>(entity =>
 			{
-				entity.HasKey(p => p.PageIdKey);
-				entity.Property(p => p.PageIdKey).ValueGeneratedOnAdd();
-				entity.Property(p => p.PageID);
+				//entity.HasKey(p => p.PageIdKey);
+				//entity.Property(p => p.PageIdKey).ValueGeneratedOnAdd();
+				entity.HasKey(p => p.PageID);
 				entity.Property(p => p.PageName);
 				entity.Property(p => p.PageFollow);
 				entity.Property(p => p.PageLike);
@@ -84,12 +69,28 @@ namespace Facebook_MKT.Data
 				// Thiết lập mối quan hệ và hành vi xóa
 				entity.HasOne(p => p.Account)
 					.WithMany(a => a.Pages)
-					.HasForeignKey(p => p.AccountID);
+					.HasForeignKey(p => p.AccountIDKey)
+					.OnDelete(DeleteBehavior.Cascade); ;
 
-				entity.HasOne(p => p.Folder)
+				entity.HasOne(p => p.FolderPage)
 						.WithMany(f => f.Pages)
-						.HasForeignKey(p => p.FolderIdKey);
+						.HasForeignKey(p => p.FolderIdKey)
+						.OnDelete(DeleteBehavior.Cascade);
+				
+			});
 
+			// Cấu hình cho Group
+			modelBuilder.Entity<Group>(entity =>
+			{
+				entity.HasKey(p => p.GroupIdKey);
+				entity.Property(p => p.GroupIdKey).ValueGeneratedOnAdd();
+				entity.Property(p => p.GroupName);
+				entity.Property(p=>p.GroupID).IsRequired();
+				entity.HasIndex(p=>p.GroupID).IsUnique();
+				entity.Property(p => p.GroupMember);
+				entity.Property(p => p.GroupCensor);
+				entity.Property(p => p.AccountID);
+				entity.Property(p => p.GroupStatus);
 			});
 
 			//Cấu hình cho Folder
@@ -97,11 +98,41 @@ namespace Facebook_MKT.Data
 			{
 				entity.HasKey(f => f.FolderIdKey);
 				entity.Property(f => f.FolderIdKey).ValueGeneratedOnAdd();
-				entity.Property(f => f.FolderName);
+				entity.Property(f => f.FolderName)
+								.IsRequired()
+								.HasMaxLength(255);
+				entity.HasIndex(f => f.FolderName).IsUnique();
 				entity.HasData(
-						   new Folder { FolderIdKey = 1, FolderName = "All" },
-						   new Folder { FolderIdKey = 2, FolderName = "Test" }
-	   );
+						   new Folder { FolderIdKey = 1, FolderName = "All" });
+
+			});
+
+			//Cấu hình cho FolderPage
+			modelBuilder.Entity<FolderPage>(entity =>
+			{
+				entity.HasKey(f => f.FolderIdKey);
+
+				entity.Property(f => f.FolderName)
+								.IsRequired()
+								.HasMaxLength(255);
+				entity.HasIndex(f => f.FolderName).IsUnique();
+				entity.HasData(
+						   new FolderPage { FolderIdKey = 1, FolderName = "All" });
+				entity.Property(f => f.FolderIdKey).ValueGeneratedOnAdd();
+			});
+
+			//Cấu hình cho FolderGroup
+			modelBuilder.Entity<FolderGroup>(entity =>
+			{
+				entity.HasKey(f => f.FolderIdKey);
+
+				entity.Property(f => f.FolderName)
+								.IsRequired()
+								.HasMaxLength(255);
+				entity.HasIndex(f => f.FolderName).IsUnique();
+				entity.HasData(
+						   new FolderGroup { FolderIdKey = 1, FolderName = "All" });
+				entity.Property(f => f.FolderIdKey).ValueGeneratedOnAdd();
 			});
 		}
 	}

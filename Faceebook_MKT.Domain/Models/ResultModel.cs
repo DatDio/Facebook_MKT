@@ -18,7 +18,5 @@ namespace Faceebook_MKT.Domain.Models
 		PostDeleted,
 		NameError,
 		HasNoPage,
-		LoginFail,
-		CanNotUpLoadReel
 	}
 }

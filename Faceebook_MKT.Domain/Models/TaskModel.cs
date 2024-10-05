@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,8 @@ namespace Faceebook_MKT.Domain.Models
 		MultiText,
 		Number,
 		File,
-		Label
+		Label,
+		Media
 	}
 
 	public class TaskField : INotifyPropertyChanged
@@ -73,8 +75,18 @@ namespace Faceebook_MKT.Domain.Models
 	{
 		private string _taskName;
 		private List<TaskField> _fields;
+		//private ObservableCollection<MediaFileModel> _mediaFile;
 		private int _index;
 
+		//public ObservableCollection<MediaFileModel> MediaFiles
+		//{
+		//	get { return _mediaFile; }
+		//	set
+		//	{
+		//		_mediaFile = value;
+		//		OnPropertyChanged(nameof(MediaFileModel));
+		//	}
+		//}
 		public string TaskName
 		{
 			get => _taskName;
@@ -108,12 +120,14 @@ namespace Faceebook_MKT.Domain.Models
 		public TaskModel()
 		{
 			Fields = new List<TaskField>();
+			//MediaFiles = new ObservableCollection<MediaFileModel>();
 		}
 
 		public TaskModel(string taskName, List<TaskField> fields)
 		{
 			TaskName = taskName;
 			Fields = fields;
+			//MediaFiles = new ObservableCollection<MediaFileModel>();
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

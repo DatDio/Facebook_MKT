@@ -18,6 +18,8 @@ namespace Facebook_MKT.WPF.Assets.Styles.TaskFieldTemplate
 		public DataTemplate LabelFieldTemplate { get; set; }
 		public DataTemplate MultiTextFieldTemplate { get; set; }
 
+		public DataTemplate MediaFieldTemplate { get; set; }
+
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
 			var taskField = item as TaskField;
@@ -28,6 +30,7 @@ namespace Facebook_MKT.WPF.Assets.Styles.TaskFieldTemplate
 				TaskFieldType.Number => NumberFieldTemplate,
 				TaskFieldType.File => FileFieldTemplate,
 				TaskFieldType.Label=> LabelFieldTemplate,
+				TaskFieldType.Media => MediaFieldTemplate,
 				_ => base.SelectTemplate(item, container),
 			};
 		}

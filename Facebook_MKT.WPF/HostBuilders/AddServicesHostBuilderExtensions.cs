@@ -1,9 +1,12 @@
-﻿using Facebook_MKT.Data.Entities;
-using Facebook_MKT.Data.Services;
-using Facebook_MKT.WPF.Commands.LoadDataGrid;
-using Faceebook_MKT.Domain.Helpers.ConvertToModel;
+﻿using Facebok_MKT.Service.DataService.Accounts;
+using Facebok_MKT.Service.DataService.Folders.FolderAccounts;
+using Facebok_MKT.Service.DataService.Folders.FolderPages;
+using Facebok_MKT.Service.DataService.Pages;
+using Facebook_MKT.Data;
+using Facebook_MKT.Data.Entities;
 using Faceebook_MKT.Domain.Helpers.MappingEntites;
 using Faceebook_MKT.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -21,17 +24,14 @@ namespace Facebook_MKT.WPF.HostBuilders
 		{
 			host.ConfigureServices(services =>
 			{
-				services.AddScoped<IDataService<Account>, GenericDataService<Account>>();
-				services.AddScoped<IDataService<Page>, GenericDataService<Page>>();
-				services.AddScoped<IDataService<Folder>, GenericDataService<Folder>>();
-				services.AddScoped<IDataService<FolderPage>, GenericDataService<FolderPage>>();
+				services.AddScoped<IAccountDataService, AccountDataService>();
+				services.AddScoped<IPageDataService, PageDataService>();
+				services.AddScoped<IFolderDataService, FolderAccountDataService>();
+				services.AddScoped<IFolderPageDataService, FolderPageDataService>();
+				services.AddScoped<DbContext, FBDataContext>();
 
 
 				services.AddAutoMapper(typeof(MappingProfile));
-
-				//services.AddSingleton<ObservableCollection<AccountModel>>();
-				//services.AddSingleton<IEntityToModelConverter<Account, AccountModel>, AccountToModelConverter>();
-				//services.AddSingleton<IEntityToModelConverter<Page, PageModel>, PageToModelConverter>();
 			});
 
 			return host;

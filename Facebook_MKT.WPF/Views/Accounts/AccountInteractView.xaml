@@ -15,34 +15,42 @@
               Foreground="White"
               materialDesign:ColorZoneAssist.Mode="PrimaryDark"
               Style="{StaticResource MaterialDesignFilledTabControl}">
-            <TabItem Header="Chức năng" >
+            <TabItem Header="Main" >
                 <Grid >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="100"></RowDefinition>
-                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition Height="100"></RowDefinition>
                         <!--<RowDefinition Height="40"></RowDefinition>-->
                         <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="35"></RowDefinition>
                     </Grid.RowDefinitions>
                     <StackPanel x:Name="Header" Grid.Row="0" 
                               VerticalAlignment="Center" Orientation="Horizontal" 
                               Margin="20" >
 
                         <Button 
-                            Content="Start"
-                            Command="{Binding StartCommand}"
-                            IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                            Style="{StaticResource StartButtonStyle}"
-                            ToolTip="Bắt đầu chạy"
-                            Margin="0,0,20,0">
+Content="Start Script"
+Command="{Binding StartCommand}"
+Style="{StaticResource StartButtonStyle}"
+ToolTip="Bắt đầu chạy"
+Margin="0,0,20,0">
                         </Button>
 
                         <Button
-                            Content="Stop"
-                            IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                            Style="{StaticResource StopButtonStyle}"
-                            ToolTip="Tắt chương trình"
-                            Margin="0,0,20,0">
+Content="Stop"
+Command="{Binding StopCommand}"
+Style="{StaticResource StopButtonStyle}"
+ToolTip="Tắt chương trình"
+Margin="0,0,20,0">
                         </Button>
+
+                        <Button
+Content="{Binding PauseButtonContent}"
+Command="{Binding PauseCommand}"
+Style="{StaticResource StopButtonStyle}"
+ToolTip="Tạm dừng chương trình"
+Margin="0,0,20,0" />
+
                         <Button
                          Content="Close All Chrome"
                          ToolTip="Tắt toàn bộ chrome"
@@ -73,55 +81,60 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center">
                             <Button DataContext="{Binding DataContext.DataGridAccountViewModel,
-           RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"  
-           Command="{Binding LoadDataGridAccountCommand}"
-            CommandParameter="{Binding SelectedFolderIdKey}"
-           
-           Background="Transparent"
-           BorderThickness="0">
+                                   RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"  
+                                   Command="{Binding LoadDataGridAccountCommand}"
+                                    CommandParameter="{Binding SelectedFolderIdKey}"
+                                   Background="Transparent"
+                                   BorderThickness="0">
                                 <materialDesign:PackIcon 
-                
-Kind="Reload" 
-Style="{StaticResource CustomPackIconStyle}"
-Foreground="Black"
-HorizontalAlignment="Center"
-VerticalAlignment="Center"/>
+                                Kind="Reload" 
+                                Style="{StaticResource CustomPackIconStyle}"
+                                Foreground="Black"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
                             </Button>
                         </Border>
 
                     </StackPanel>
                     <StackPanel x:Name="datagrid" Grid.Row="2">
                         <datagridAccount:DataGridAccount 
+                             x:Name="AccountDataGrid"
                             Margin="0,20,0,0"
                         DataContext="{Binding DataGridAccountViewModel}" />
+                    </StackPanel>
+                    <StackPanel  x:Name="Footer" Grid.Row="3" Margin="20,0,0,0" Orientation="Horizontal">
+                        <TextBlock FontSize="16" Text="Tổng tài khoản: "></TextBlock>
+                        <TextBlock FontSize="16" Text="{Binding DataGridAccountViewModel.TotalRows,Mode=TwoWay}" />
+                       
                     </StackPanel>
                 </Grid>
             </TabItem>
 
 
-            <TabItem
-                    
-                    Header="Cấu hình">
+            <TabItem Header="Config Script">
 
                 <StackPanel Margin="20,20,20,0" >
                     <TextBlock Text="Script:" FontSize="18" FontWeight="Bold" />
 
-                    <GroupBox Header="Task List" Margin="0,10,0,40" Background="Transparent">
+                    <StackPanel Margin="0,10,0,20">
                         <ListBox ItemsSource="{Binding TaskList}" 
              SelectionMode="Single"
+            BorderThickness="2"
+            BorderBrush="Black"
+            Padding="12"
              dragDrop:DragDrop.IsDropTarget="True"
              dragDrop:DragDrop.IsDragSource="True"
              AllowDrop="True"
-             Height="200"
+             Height="300"
              dragDrop:DragDrop.DropHandler="{Binding TaskDropHandler}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" >
                                         <TextBlock Text="{Binding Index, StringFormat='{}{0}.',Mode=TwoWay}" 
-            Margin="0,0,10,0" FontSize="17"/>
+                            Margin="0,0,10,0" FontSize="17"/>
                                         <TextBlock Text="{Binding TaskName}" FontSize="17" Margin="0,0,20,0" />
                                         <ItemsControl ItemsSource="{Binding Fields}" 
-         ItemTemplateSelector="{StaticResource TaskFieldTemplateSelector}">
+                                        ItemTemplateSelector="{StaticResource TaskFieldTemplateSelector}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal"
@@ -129,40 +142,41 @@ VerticalAlignment="Center"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
+                                       
                                         <Border 
                                                 Margin="0,-10,0,0"
-       Background="Transparent"
-       HorizontalAlignment="Center"
-       VerticalAlignment="Center">
+                                               Background="Transparent"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center">
                                             <Button Command="{Binding DataContext.RemoveTaskCommand, 
-        RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
-            CommandParameter="{Binding}" 
-       Background="Transparent"
-       BorderThickness="0">
+                                            RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
+                                            CommandParameter="{Binding}" 
+                                           Background="Transparent"
+                                           Height="40"
+                                           BorderThickness="0">
                                                 <materialDesign:PackIcon 
-        Height="30"
-            Width="50"
-            ToolTip="Xóa"
-        Kind="DeleteCircleOutline" 
-        Style="{StaticResource CustomPackIconStyle}"
-        Foreground="White"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Center"/>
+                                                Height="40"
+                                                Width="60"
+                                                ToolTip="Xóa"
+                                                Kind="DeleteOff" 
+                                                Foreground="White"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"/>
                                             </Button>
                                         </Border>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </GroupBox>
+                    </StackPanel>
 
 
-                    <StackPanel>
+                    <StackPanel >
                         <ListBox ItemsSource="{Binding AccountTasks}" 
              Background="Transparent"
-             BorderThickness="1"
+             BorderThickness="2"
              Padding="12"
-                                 Height="450"
+             Height="400"
              BorderBrush="Black"
              SelectionMode="Single"
              dragDrop:DragDrop.IsDragSource="True"

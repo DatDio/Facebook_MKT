@@ -62,21 +62,92 @@
         </StackPanel>
     </DataTemplate>
 
-    
+
     <!-- Template for File -->
     <DataTemplate x:Key="FileFieldTemplate">
-        <StackPanel Orientation="Horizontal" Margin="0,10,10,10">
-            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <Button Content="Browse..." 
-                    Command="{Binding DataContext.BrowseCommand,
-                RelativeSource={RelativeSource AncestorType=ListBox}}" 
-                    CommandParameter="{Binding}"/>
+        <StackPanel Orientation="Horizontal" Margin="0,10,10,10" >
+            <TextBlock Text="{Binding Label}" Margin="0,0,10,0"/>
+            <!-- Truyền TaskModel thay vì TaskFields -->
+            <!--<TextBlock Text="{Binding DataContext,RelativeSource={RelativeSource AncestorType=ListBox}}"></TextBlock>-->
 
-            <TextBlock Text="{Binding Value}" Margin="10,0,0,0" VerticalAlignment="Center" />
+            <StackPanel >
+                <Border   Margin="0,0,0,0"              
+Background="Transparent">
+
+                    <Button
+                    Height="40"
+                    Command="{Binding DataContext.BrowseCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" 
+                    CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"
+                    Background="Transparent"
+                    BorderThickness="0">
+                        <materialDesign:PackIcon 
+ Height="40"
+     Width="60"
+     ToolTip="Cấu hình"
+ Kind="ContentSaveCog" 
+ Foreground="White"
+ HorizontalAlignment="Right"
+ VerticalAlignment="Center"/>
+
+                    </Button>
+                </Border>
+
+                <Label Margin="20,0,0,0" Content="Cấu hình"></Label>
+            </StackPanel>
+
+            <!--<Button Content="Cấu hình" 
+     Command="{Binding DataContext.BrowseCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" 
+     CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" />-->
         </StackPanel>
     </DataTemplate>
 
 
+
+    <DataTemplate x:Key="MediaFieldTemplate">
+        <StackPanel>
+          
+            <ListBox x:Name="MediaListBox" 
+ Margin="0"
+ ItemsSource="{Binding Value}" 
+ ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" Margin="0">
+                            <Grid Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- Hiển thị thumbnail của video -->
+
+                                <Image Source="{Binding ThumbnailPath}" 
+       Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+       Stretch="UniformToFill"/>
+
+                                <!-- Hiển thị biểu tượng nếu là video -->
+                                <materialDesign:PackIcon Kind="ArrowRightDropCircleOutline" 
+                           Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center" 
+                           Width="40" 
+                           Height="40" 
+                           Foreground="White" />
+
+                                <!-- Hiển thị ảnh nếu là hình ảnh -->
+                                <Image Source="{Binding FilePath}" 
+       Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}"
+       Stretch="UniformToFill"/>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
+            </ListBox>
+        </StackPanel>
+       
+    </DataTemplate>
 
     <!-- Template Selector -->
     <local:TaskFieldTemplateSelector
@@ -85,6 +156,6 @@
         MultiTextFieldTemplate="{StaticResource MultiTextFieldTemplate}"
         LabelFieldTemplate="{StaticResource LabelFieldTemplate}"
         NumberFieldTemplate="{StaticResource NumberFieldTemplate}"
-         
+        MediaFieldTemplate ="{StaticResource MediaFieldTemplate}"
         FileFieldTemplate="{StaticResource FileFieldTemplate}" />
 </ResourceDictionary>

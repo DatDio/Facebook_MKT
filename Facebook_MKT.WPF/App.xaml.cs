@@ -1,9 +1,7 @@
 ﻿using Facebook_MKT.Data;
-using Facebook_MKT.Data.Services;
 using Facebook_MKT.WPF.HostBuilders;
 using Facebook_MKT.WPF.ViewModels;
 using Facebook_MKT.WPF.ViewModels.Pages;
-using Faceebook_MKT.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +22,8 @@ namespace Facebook_MKT.WPF
 		public App()
 		{
 			_host = CreateHostBuilder().Build();
-		
-		
+
+
 		}
 		public static IHostBuilder CreateHostBuilder(string[] args = null)
 		{
@@ -37,50 +35,32 @@ namespace Facebook_MKT.WPF
 				.AddViewModels()
 				.AddViews();
 		}
-		//private static IHostBuilder CreateHostBuilder()
-		//{
-		//	return Host.CreateDefaultBuilder()
-		//		.ConfigureServices((context, services) =>
-		//		{
-		//			// Cấu hình DbContext với SQLite
-		//			//services.AddDbContext<FBDataContext>(options =>
-		//			//	options.UseSqlite("Data Source=FacebookMKT.db"));
 
-		//			// Đăng ký các dịch vụ khác
-		//			services.AddSingleton<IDataService<Account>, GenericDataService<Account>>();
-		//			services.AddSingleton<IDataService<Page>, GenericDataService<Page>>();
-		//			services.AddSingleton<PageViewModel>();
-		//			// Đăng ký các dịch vụ khác như giao diện, view models, v.v.
-		//			services.AddSingleton<MainWindow>(s => new MainWindow(s.GetRequiredService<MainViewModel>()));
-		//		});
-		//}
-
-		
-		
-		
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			
-				if (_host == null)
-				{
-					throw new InvalidOperationException("Host has not been initialized.");
-				}
 
-				_host.Start();
+			if (_host == null)
+			{
+				throw new InvalidOperationException("Host has not been initialized.");
+			}
 
-				using (var scope = _host.Services.CreateScope())
-				{
-					var context = scope.ServiceProvider.GetRequiredService<FBDataContext>();
-					context.Database.Migrate();
-				}
+			_host.Start();
 
-				// Lấy MainWindow từ DI container và hiển thị nó nếu cần thiết
-				var window = _host.Services.GetRequiredService<MainWindow>();
-				window.Show();
+			//using (var scope = _host.Services.CreateScope())
+			//{
+			//	var context = scope.ServiceProvider.GetRequiredService<FBDataContext>();
+			//	//context.Database.EnsureDeleted(); // Xóa cơ sở dữ liệu
+			//	//context.Database.EnsureCreated();
+			//	context.Database.Migrate();
+			//}
 
-				base.OnStartup(e);
-		
-			
+			// Lấy MainWindow từ DI container và hiển thị nó nếu cần thiết
+			var window = _host.Services.GetRequiredService<MainWindow>();
+			window.Show();
+
+			base.OnStartup(e);
+
+
 		}
 
 		protected override async void OnExit(ExitEventArgs e)

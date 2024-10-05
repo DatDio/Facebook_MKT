@@ -6,6 +6,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:cbbFolder="clr-namespace:Facebook_MKT.WPF.Controls.FolderControls"
              xmlns:datagridAccount="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid.Account"
+             xmlns:datagridPage="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid.Pages"
              xmlns:accType="clr-namespace:Facebook_MKT.WPF.ViewModels.Pages"
              xmlns:local="clr-namespace:Facebook_MKT.WPF.Views.Pages"
               xmlns:dragDrop="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
@@ -17,209 +18,224 @@
                     Foreground="White"
                     materialDesign:ColorZoneAssist.Mode="PrimaryDark"
                     Style="{StaticResource MaterialDesignFilledTabControl}">
-                <TabItem Header="Chức năng" >
-                    <Grid >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="100"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
-                        <!--<RowDefinition Height="40"></RowDefinition>-->
+            <TabItem Header="Chức năng">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="100"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <StackPanel x:Name="Header" Grid.Row="0" 
-                                    VerticalAlignment="Center" Orientation="Horizontal" 
-                                    Margin="20" >
-                       
+                    </Grid.RowDefinitions>
+
+                    <StackPanel x:Name="Header" Grid.Row="0"
+                    VerticalAlignment="Center" Orientation="Horizontal"
+                    Margin="20">
                         <Button 
-                                  Content="Start"
-                                  Command="{Binding StartCommand}"
-                                  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                                  Style="{StaticResource StartButtonStyle}"
-                                  ToolTip="Bắt đầu chạy"
-                                  Margin="0,0,20,0">
+                Content="Start Script"
+                Command="{Binding StartCommand}"
+                Style="{StaticResource StartButtonStyle}"
+                ToolTip="Bắt đầu chạy"
+                Margin="0,0,20,0">
                         </Button>
-                            
+
                         <Button
-                                  Content="Stop"
-                                  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                                  Style="{StaticResource StopButtonStyle}"
-                                  ToolTip="Tắt chương trình"
-                                  Margin="0,0,20,0">
-                            </Button>
-                        <Button
-                               Content="Close All Chrome"
-                               ToolTip="Tắt toàn bộ chrome"
-                               Margin="0,0,20,0"
-                               IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
-                               Style="{StaticResource StopButtonStyle}">
+                Content="Stop"
+                Command="{Binding StopCommand}"
+                Style="{StaticResource StopButtonStyle}"
+                ToolTip="Tắt chương trình"
+                Margin="0,0,20,0">
                         </Button>
+
+                        <Button
+                Content="{Binding PauseButtonContent}"
+                Command="{Binding PauseCommand}"
+                Style="{StaticResource StopButtonStyle}"
+                ToolTip="Tạm dừng chương trình"
+                Margin="0,0,20,0" />
+
+                        <Button
+                Content="Close All Chrome"
+                ToolTip="Tắt toàn bộ chrome"
+                Margin="0,0,20,0"
+                IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                Style="{StaticResource StopButtonStyle}">
+                        </Button>
+
                         <Label Content="Thread:"></Label>
                         <materialDesign:NumericUpDown
-                                        ToolTip="Số Luồng"
-                                        Background="WhiteSmoke"
-                                        Foreground="Black"
-                                         Value="{Binding MaxParallelTasks, Mode=TwoWay}"
-                                                Minimum="1"
-                                                Maximum="100"/>
+                ToolTip="Số Luồng"
+                Background="WhiteSmoke"
+                Foreground="Black"
+                Value="{Binding MaxParallelTasks, Mode=TwoWay}"
+                Minimum="1"
+                Maximum="100"/>
                     </StackPanel>
-                    <!--<Rectangle  Grid.Row="2" ></Rectangle>-->
-                        
-                        <StackPanel x:Name="MainContent" Grid.Row="1" Background="{StaticResource backgroundColor}">
 
-                        <Expander 
-                                Foreground="White" FontWeight="Bold" FontSize="20"
-                                Background="Transparent"
-                                Margin="0"
-                            >
-                            <Expander.HeaderTemplate >
+                    <!-- ScrollViewer bao bọc MainContent -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Grid x:Name="MainContent" Background="{StaticResource backgroundColor}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
-                                       
-                                        <materialDesign:PackIcon Kind="AccountArrowUp" Style="{StaticResource CustomPackIconStyle}"/>
-                                       
-                                        <TextBlock Text="Account" FontSize="20"/>
-                                        <cbbFolder:CbbAccountFolder 
-                                                        DataContext="{Binding DataContext.FolderAccountsViewModel, 
-                                                         RelativeSource={RelativeSource AncestorType=Expander}}" 
-                                                        Margin="20,0,20,0"/>
-                                        <Border Width="55" Height="40"
-                                            Background="White"
-                                            CornerRadius="20"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                                >
-                                            <Button DataContext="{Binding DataContext.DataGridAccountViewModel,
-                                                    RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"  
-                                                    Command="{Binding LoadDataGridAccountCommand}"
-                                                     CommandParameter="{Binding SelectedFolderIdKey}"
-                                                    
-                                                    Background="Transparent"
-                                                    BorderThickness="0">
-                                                <materialDesign:PackIcon 
-                                                                         
-                                                         Kind="Reload" 
-                                                         Style="{StaticResource CustomPackIconStyle}"
-                                                         Foreground="Black"
-                                                         HorizontalAlignment="Center"
-                                                         VerticalAlignment="Center"/>
-                                            </Button>
-                                        </Border>
+                            <Expander 
+                    Grid.Row="0" 
+                    Foreground="White" FontWeight="Bold" FontSize="20"
+                    Background="Transparent"
+                    Margin="0"
+                    Expanded="Expander_Expanded"
+                    Collapsed="Expander_Collapsed">
 
-                                    </StackPanel>
-                                </DataTemplate>
-                            </Expander.HeaderTemplate>
-                            <Expander.Content>
-                                <StackPanel>
-                                    <datagridAccount:DataGridAccount MaxHeight="280"
-                                         DataContext="{Binding DataGridAccountViewModel}" />
-                                   
+                                <Expander.HeaderTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="AccountArrowUp" Style="{StaticResource CustomPackIconStyle}" />
+                                            <TextBlock Text="Account" FontSize="20"/>
+                                            <cbbFolder:CbbAccountFolder 
+                                    DataContext="{Binding DataContext.FolderAccountsViewModel, 
+                                    RelativeSource={RelativeSource AncestorType=Expander}}" 
+                                    Margin="20,0,20,0"/>
+                                            <Border CornerRadius="30" Margin="0,-30,0,0" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Button DataContext="{Binding DataContext.DataGridAccountViewModel, RelativeSource={RelativeSource AncestorType=UserControl}}"  
+                                            Command="{Binding LoadDataGridAccountCommand}"
+                                            CommandParameter="{Binding SelectedFolderIdKey}"
+                                            Background="Transparent" Height="40" BorderThickness="0">
+                                                    <materialDesign:PackIcon Height="40" Width="40" ToolTip="Reload" Kind="Reload" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Button>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Expander.HeaderTemplate>
+
+                                <!-- Expander Content -->
+                                <Grid x:Name="ExpanderContent">
+                                    <datagridAccount:DataGridAccount MaxHeight="700" DataContext="{Binding DataGridAccountViewModel}" />
+                                </Grid>
+                            </Expander>
+
+                            <Rectangle Height="20" ></Rectangle>
+
+                            <StackPanel x:Name="Footer" Grid.Row="1" Margin="0,30,0,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                                    <materialDesign:PackIcon Kind="EarthArrowDown" Style="{StaticResource CustomPackIconStyle}"/>
+                                    <TextBlock Text="Page" FontSize="20" FontWeight="Bold"/>
+                                    <cbbFolder:CbbAccountFolder 
+                            DataContext="{Binding DataContext.FolderPagesViewModel, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                            Margin="55,0,20,10"/>
+                                    <Border CornerRadius="30" Margin="0,-30,0,0" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Button DataContext="{Binding DataContext.DataGridPageViewModel, RelativeSource={RelativeSource AncestorType=UserControl}}"  
+ Command="{Binding LoadDataGridPageCommand}"
+ CommandParameter="{Binding SelectedFolderIdKey}"
+ Background="Transparent" Height="40" BorderThickness="0">
+                                            <materialDesign:PackIcon Height="40" Width="40" ToolTip="Reload" Kind="Reload" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Button>
+                                    </Border>
                                 </StackPanel>
-                            </Expander.Content>
-                        </Expander>
-                    </StackPanel>
+                                <datagridPage:DataGridPage DataContext="{Binding DataGridPageViewModel}" />
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
 
-                    <StackPanel x:Name="Footer" Grid.Row="3" >
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  Margin="20,0,0,0">
-                            <materialDesign:PackIcon Kind="EarthArrowDown" Style="{StaticResource CustomPackIconStyle}"/>
-                           
-                            <TextBlock Text="Page" FontSize="20" FontWeight="Bold"/>
-                            <cbbFolder:CbbAccountFolder 
-                             DataContext="{Binding DataContext.FolderAccountsViewModel}" 
-                             Margin="20,0,20,0" FontWeight="Bold"/>
-                        </StackPanel>
-                        <DataGrid Height="50">
-                            
-                        </DataGrid>
-                    </StackPanel>   
-                        
-                    </Grid>
-                </TabItem>
 
-            <TabItem
-                    Background="{StaticResource backgroundColor}"
-      Header="Cấu hình">
+            <TabItem Header="Config Script">
+
                 <StackPanel Margin="20,20,20,0" >
                     <TextBlock Text="Script:" FontSize="18" FontWeight="Bold" />
 
-                    <GroupBox Header="Task List" Margin="0,10,0,40" Background="Transparent">
+                    <StackPanel Margin="0,10,0,20">
                         <ListBox ItemsSource="{Binding TaskList}" 
-      SelectionMode="Single"
-      dragDrop:DragDrop.IsDropTarget="True"
-      dragDrop:DragDrop.IsDragSource="True"
-      AllowDrop="True"
-      Height="200"
-      dragDrop:DragDrop.DropHandler="{Binding TaskDropHandler}">
+   SelectionMode="Single"
+  BorderThickness="2"
+  BorderBrush="Black"
+  Padding="12"
+   dragDrop:DragDrop.IsDropTarget="True"
+   dragDrop:DragDrop.IsDragSource="True"
+   AllowDrop="True"
+   Height="300"
+   dragDrop:DragDrop.DropHandler="{Binding TaskDropHandler}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" >
                                         <TextBlock Text="{Binding Index, StringFormat='{}{0}.',Mode=TwoWay}" 
-     Margin="0,0,10,0" FontSize="17"/>
+                  Margin="0,0,10,0" FontSize="17"/>
                                         <TextBlock Text="{Binding TaskName}" FontSize="17" Margin="0,0,20,0" />
                                         <ItemsControl ItemsSource="{Binding Fields}" 
-  ItemTemplateSelector="{StaticResource TaskFieldTemplateSelector}">
+                              ItemTemplateSelector="{StaticResource TaskFieldTemplateSelector}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Orientation="Horizontal"
-                      Margin="0,0,0,0"/>
+                   Margin="0,-12,0,0"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <Border Width="50" Height="40"
-Background="Transparent"
-CornerRadius="50"
- BorderThickness="1"
- BorderBrush="White"
-HorizontalAlignment="Center"
-VerticalAlignment="Center">
+
+                                        <Border 
+                                      Margin="0,-10,0,0"
+                                     Background="Transparent"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center">
                                             <Button Command="{Binding DataContext.RemoveTaskCommand, 
- RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
-     CommandParameter="{Binding}" 
-Background="Transparent"
-BorderThickness="0">
+                                  RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" 
+                                  CommandParameter="{Binding}" 
+                                 Background="Transparent"
+                                 Height="40"
+                                 BorderThickness="0">
                                                 <materialDesign:PackIcon 
- Height="30"
-     Width="30"
-     ToolTip="Xóa"
- Kind="Delete" 
- Style="{StaticResource CustomPackIconStyle}"
- Foreground="White"
- HorizontalAlignment="Center"
- VerticalAlignment="Center"/>
+                                      Height="40"
+                                      Width="60"
+                                      ToolTip="Xóa"
+                                      Kind="DeleteOff" 
+                                      Foreground="White"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"/>
                                             </Button>
                                         </Border>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </GroupBox>
+                    </StackPanel>
 
 
-                    <WrapPanel>
-                        <GroupBox Header="Account Tasks" Margin="0,0,20,20" Background="Transparent">
-                            <ListBox 
-                                  Background="Transparent"
-                                  SelectionMode="Single"
-                                  dragDrop:DragDrop.IsDragSource="True"
-                                  dragDrop:DragDrop.IsDropTarget="True"
-                                  MinHeight="200"
-                                  AllowDrop="False">
-                                
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Index, StringFormat='{}{0}.'}" 
-                                                Margin="0,0,10,0" FontSize="17"/>
-                                            <TextBlock Text="Comment" FontSize="17" Margin="0,0,20,0" />
-                                            <Label Content="Từ"></Label>
-                                            <TextBox Text=""></TextBox>
-                                            <Label Content="Đến"></Label>
-                                            <TextBox Text=""></TextBox>
-                                        </StackPanel>
-                                    
-                            </ListBox>
-                        </GroupBox>
-                    </WrapPanel>
+                    <StackPanel >
+                        <ListBox ItemsSource="{Binding PageTasks}" 
+   Background="Transparent"
+   BorderThickness="2"
+   Padding="12"
+   Height="400"
+   BorderBrush="Black"
+   SelectionMode="Single"
+   dragDrop:DragDrop.IsDragSource="True"
+   dragDrop:DragDrop.IsDropTarget="True"
+   MinHeight="200"
+   AllowDrop="False"
+   ScrollViewer.VerticalScrollBarVisibility="Auto"
+   ScrollViewer.CanContentScroll="True">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Index, StringFormat='{}{0}.'}" 
+                     Margin="0,0,10,0" FontSize="17"/>
+                                        <TextBlock Text="{Binding TaskName}" FontSize="17" Margin="0,0,20,0" />
+                                        <ItemsControl ItemsSource="{Binding Fields}" 
+                        ItemTemplateSelector="{StaticResource TaskFieldTemplateSelector}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,-12,0,0"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
                 </StackPanel>
+
             </TabItem>
-            </TabControl>
+        </TabControl>
        
     
     </Grid>

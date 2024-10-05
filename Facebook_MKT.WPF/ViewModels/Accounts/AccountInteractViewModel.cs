@@ -1,14 +1,19 @@
 ﻿using AutoMapper;
+using Facebok_MKT.Service.BrowserService;
+using Facebok_MKT.Service.Controller.BrowserController;
+using Facebok_MKT.Service.DataService.Accounts;
+using Facebok_MKT.Service.DataService.Folders.FolderAccounts;
+using Facebok_MKT.Service.DataService.Folders.FolderPages;
+using Facebok_MKT.Service.DataService.Pages;
 using Facebook_MKT.Data.Entities;
-using Facebook_MKT.Data.Services;
 using Facebook_MKT.WPF.Helppers;
 using Facebook_MKT.WPF.Models;
 using Facebook_MKT.WPF.ViewModels.Combobox;
 using Facebook_MKT.WPF.ViewModels.DataGrid;
 using Facebook_MKT.WPF.ViewModels.General_settings;
-using Faceebook_MKT.Domain.BrowserController;
+using Facebook_MKT.WPF.Window.SetupPostWindow;
 using Faceebook_MKT.Domain.Models;
-using Faceebook_MKT.Domain.Services.BrowserService;
+using Faceebook_MKT.Domain.Systems;
 using GongSolutions.Wpf.DragDrop;
 using System;
 using System.Collections.Generic;
@@ -18,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Input;
 using static Leaf.xNet.Services.Cloudflare.CloudflareBypass;
 
@@ -26,17 +32,7 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 	public class AccountInteractViewModel : BaseViewModel
 	{
 		private readonly GeneralSettingsViewModel _generalSettings;
-		private int _maxParallelTasks = 5; // Giá trị mặc định
-		public int MaxParallelTasks
-		{
-			get { return _maxParallelTasks; }
-			set
-			{
-				_maxParallelTasks = value;
-				OnPropertyChanged(nameof(MaxParallelTasks));
-			}
-		}
-
+		//public ObservableCollection<MediaFileModel> MediaFiles { get; set; }
 		public ObservableCollection<TaskModel> AccountTasks { get; set; }
 		public ObservableCollection<TaskModel> TaskList { get; set; }
 
@@ -44,10 +40,11 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 		private List<string> _proxyList;
 
 		#region Folder, Datagrid, BrowserService
-		public FolderDataViewModel<Folder> FolderAccountsViewModel { get; }
+		public FolderAccountViewModel FolderAccountsViewModel { get; }
+		public FolderPageViewModel FolderPageViewModel { get; }
 		public DataGridAccountViewModel DataGridAccountViewModel { get; }
 		private BrowserService BrowserService { get; set; }
-		private FacebookBrowserController FBBrowserController { get; set; }
+		
 		#endregion
 
 		public ICommand StartCommand { get; set; }
@@ -55,14 +52,15 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 		public ICommand BrowseCommand { get; set; }
 		public ObservableCollection<AccountModel> AccountsSeleted { get; set; } = new ObservableCollection<AccountModel>();
 
-		private readonly IDataService<Account> _accountDataService;
-		private readonly IMapper _mapper;
+		private readonly IAccountDataService _accountDataService;
+		private readonly IPageDataService _pageDataService;
+		private object _lockPosition = new object();
+		private object _lockAccountModel = new object();
 		public AccountInteractViewModel(GeneralSettingsViewModel generalSettings,
-							IDataService<Account> accountDataService,
-							IDataService<Folder> folderAccountService,
-							IDataService<FolderPage> folderPageService,
-								//IEntityToModelConverter<Account, AccountModel> accountToModelConverter
-								IMapper mapper
+							IAccountDataService accountDataService,
+							IPageDataService pageDataService,
+							IFolderDataService folderAccountDataService,
+						IFolderPageDataService folderPageDataService
 							)
 		{
 			AccountTasks = new ObservableCollection<TaskModel>();
@@ -74,96 +72,59 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 
 			#region Get Instances value
 			_generalSettings = generalSettings;
-			int _scale = _generalSettings.Scale;
-			string _apiGPMUrl = _generalSettings.APIURL;
+			 _scale = _generalSettings.Scale;
+			 _apiGPMUrl = _generalSettings.APIURL;
 			_proxyList = new List<string>();
-			_mapper = mapper;
 			_accountDataService = accountDataService;
+			_pageDataService = pageDataService;
 			#endregion
 
 			#region Hiện Folder
-			FolderAccountsViewModel = new FolderDataViewModel<Folder>(folderAccountService);
+			FolderAccountsViewModel = new FolderAccountViewModel(folderAccountDataService);
 			FolderAccountsViewModel.FolderChanged += OnFolderChanged;
 			#endregion
 
 			DataGridAccountViewModel = new DataGridAccountViewModel(accountDataService,
+										_pageDataService,
 										AccountsSeleted,
-										//accountToModelConverter,
-										_mapper,
-										FolderAccountsViewModel);
+										FolderAccountsViewModel,
+										FolderPageViewModel,
+										_generalSettings,
+										this);
 
 			#region StartCommand
 			StartCommand = new RelayCommand<object>((a) =>
 			{
-				return true;
+				if (TaskList != null && TaskList.Count > 0
+				&& AccountsSeleted.Count > 0)
+					return true;
+				return false;
 			}, async (a) =>
 			{
-				var parallelOptions = new ParallelOptions
+				IsRunning = true;
+				_cancellationTokenSource = new CancellationTokenSource();
+				_pauseEvent = new ManualResetEventSlim(true);
+				List<Task> tasks = new List<Task>();
+				for (int i = 0; i < MaxParallelTasks; i++)
 				{
-					MaxDegreeOfParallelism = MaxParallelTasks // Sử dụng giá trị từ NumericUpDown
-				};
+					Task task = Task.Run(() => OneThread(_cancellationTokenSource.Token));
+					tasks.Add(task);
+				}
 
-				await Task.Run(() =>
+				await Task.WhenAll(tasks);
+				IsRunning = false;
+				_pauseEvent.Dispose();
+				_pauseEvent = null;
+				App.Current.Dispatcher.Invoke(() =>
 				{
-					Parallel.ForEach(AccountsSeleted, parallelOptions, async accountModel =>
-					{
-						string position = BrowserPositionHelper.GetNewPosition(800, 800, _scale);
-						BrowserService = new BrowserService(accountModel, _accountDataService, _mapper);
-						FBBrowserController = new FacebookBrowserController(accountModel, _accountDataService, _mapper);
-
-						// Khởi động ChromeDriver cho account
-						accountModel.Driver = await BrowserService.OpenChromeGpm(_apiGPMUrl,
-																   accountModel.GPMID, accountModel.UID,
-																   accountModel.UserAgent, scale: _scale,
-																   accountModel.Proxy, position: position);
-
-						if (accountModel.Driver == null)
-						{
-							accountModel.Status = "Mở GPM lỗi!";
-						}
-
-						foreach (var task in TaskList)
-						{
-							for(int i = 0; i <= 2; i++)
-							{
-								var logined = FBBrowserController.CheckLogined();
-								if (logined != ResultModel.LoginFail)
-								{
-									break;
-								}
-								if (i == 2)
-								{
-									return;
-								}
-							}
-							for (int i = 0; i <= 2; i++)
-							{
-								var switchProfile = FBBrowserController.SwitchToProfile();
-								if (switchProfile != ResultModel.Fail)
-								{
-									break;
-								}
-								if (i == 2)
-								{
-									accountModel.Status = "Chuyển về profile thất bại!";
-									var accountEntity = _mapper.Map<Account>(accountModel);
-									await _accountDataService.Update(accountModel.AccountIDKey, accountEntity);
-									return;
-								}
-							}
-							
-							var result = FBBrowserController.ExecuteTask(task, accountModel);
-							// Dừng nếu gặp lỗi hoặc CheckPoint
-							if (result == ResultModel.Fail || result == ResultModel.CheckPoint)
-							{
-								break;
-							}
-						}
-					});
+					MessageBox.Show("Tool đã dừng!");
 				});
+				return;
 
-				MessageBox.Show("Tool đã dừng!");
+
+				
 			});
+
 			#endregion
 
 			#region RemoveTaskCommand
@@ -179,36 +140,157 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			});
 			#endregion
 
-			BrowseCommand = new RelayCommand<TaskField>((field) => true, 
-				async (taskField) =>
+			#region SetUpPost
+			BrowseCommand = new RelayCommand<object>((taskModel) => true,
+			async (taskModel) =>
 			{
-				//var dialog = new Microsoft.Win32.OpenFileDialog
-				//{
-				//	Filter = "All Files|*.*|Image Files|*.jpg;*.jpeg;*.png;*.bmp|Video Files|*.mp4;*.avi;*.mkv",
-				//	Multiselect = true // Cho phép chọn nhiều file
-				//};
+				var t = TaskList;
+				var taskmodel = taskModel as TaskModel;
 
-				//bool? result = dialog.ShowDialog();
-
-				//if (result == true)
-				//{
-				//	// Lưu danh sách file đã chọn vào thuộc tính Value của TaskField
-				//	taskField.Value = string.Join(", ", dialog.FileNames);
-
-				//	taskField.OnPropertyChanged(nameof(taskField.Value));
-				//}
-
-				var SetupPostWindow = new SetupPostWindow(taskField);
+				var SetupPostWindow = new SetupPostWindow();
+				var SetupPostViewModel = new SetupPostViewModel(taskmodel);
+				SetupPostWindow.DataContext = SetupPostViewModel;
 				bool? result = SetupPostWindow.ShowDialog();
 
 				// Kiểm tra kết quả nếu cần
-				if (result == true)
-				{
-					taskField.OnPropertyChanged(nameof(taskField.Value));
-				}
+				//if (result == true)
+				//{
+
+				//}
+			});
+			#endregion
+
+			StopCommand = new RelayCommand<object>((a) =>
+			{
+				return IsRunning;
+			},
+			async (a) =>
+			{
+				_cancellationTokenSource.Cancel();
+				//_cancellationTokenSource.Dispose();
 			});
 
+			#region PauseCommand
+			PauseCommand = new RelayCommand<object>((a) =>
+			{
+				if (_pauseEvent != null)
+					return true; // Chỉ có thể tạm dừng khi có luồng đang chạy
+				else
+					return false;
+			},
+			(a) =>
+			{
+				if (IsRunning)
+				{
+					_pauseEvent.Reset();  // Tạm dừng các luồng
+					IsRunning = false;
+				}
+				else
+				{
+					_pauseEvent.Set();  // Tiếp tục các luồng
+					IsRunning = true;      // Đổi trạng thái thành "Resume"
+				}
+			});
+			#endregion
 
+		}
+		private async Task OneThread(CancellationToken token)
+		{
+			string position = "";
+			AccountModel accountModel = null;
+			BrowserService browserService = null;
+			lock (_lockPosition)
+			{
+				position = BrowserPositionHelper.GetNewPosition(800, 800, _scale);
+			}
+
+			try
+			{
+				while (!_cancellationTokenSource.Token.IsCancellationRequested)
+				{
+					lock (_lockAccountModel)
+					{
+						if (AccountsSeleted.Count == 0)
+						{
+							break;
+						}
+						accountModel = AccountsSeleted[0];
+						AccountsSeleted.RemoveAt(0);
+					}
+					browserService = new BrowserService(accountModel, _accountDataService);
+					accountModel.TextColor = SystemContants.RowColorRunning;
+					accountModel.Status = "Đang mở trình duyệt...";
+					try
+					{
+
+						accountModel.Driver = await browserService.OpenChromeGpm(
+													_apiGPMUrl,
+													accountModel.GPMID, accountModel.UID,
+													accountModel.UserAgent, scale: _scale,
+													accountModel.Proxy, position: position);
+					}
+					catch
+					{
+
+						accountModel.Status = "Mở GPM lỗi!";
+						accountModel.IsSelected = false;
+						accountModel.TextColor = SystemContants.RowColorFail;
+						continue;
+					}
+					_pauseEvent.Wait();
+					_cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+					var fbBrowserController = new
+					FacebookBrowserAccountController(accountModel,
+					_accountDataService,
+					_pauseEvent, _cancellationTokenSource);
+
+
+					var ResultStatus = await fbBrowserController.Initialization();
+
+					if (ResultStatus == ResultModel.Fail)
+					{
+						accountModel.IsSelected = false;
+						accountModel.TextColor = SystemContants.RowColorFail;
+						continue;
+					}
+					foreach (var task in TaskList)
+					{
+						_pauseEvent.Wait();
+						_cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+						 ResultStatus = await fbBrowserController.Initialization();
+
+						if (ResultStatus == ResultModel.Fail)
+						{
+							accountModel.IsSelected = false;
+							accountModel.TextColor = SystemContants.RowColorFail;
+							break;
+						}
+
+						var result = await fbBrowserController.ExecuteTask(task);
+
+						if (result == ResultModel.CheckPoint)
+						{
+							break;
+						}
+					}
+					accountModel.IsSelected = false;
+					accountModel.TextColor=SystemContants.RowColorSuccess;
+				}
+
+			}
+			catch (OperationCanceledException)
+			{
+				// Xử lý khi có yêu cầu hủy tác vụ
+				//Console.WriteLine("Tác vụ đã bị hủy.");
+			}
+			catch
+			{
+
+			}
+			accountModel.IsSelected = false;
+			browserService.CloseChrome();
 		}
 
 		private void LoadInitialAccountTasks()
@@ -216,11 +298,23 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			// Tạo danh sách TaskModel mới
 			var newTasks = new List<TaskModel>
 {
+				//new TaskModel
+				//{
+
+				//	TaskName = "Đăng nhập"
+
+				//},
+
 				new TaskModel
 				{
 
-					TaskName = "Đăng nhập"
-
+					TaskName = "Lướt New Feed",
+					Fields =
+					{
+						new TaskField("Từ", TaskFieldType.Number, 100),
+						new TaskField("Đến", TaskFieldType.Number, 200),
+						new TaskField("s", TaskFieldType.Label)
+					}
 				},
 				new TaskModel
 				{
@@ -229,19 +323,18 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 					Fields=
 					{
 						new TaskField("Từ", TaskFieldType.Number, 10),
-						new TaskField("Đến", TaskFieldType.Number, 10),
+						new TaskField("Đến", TaskFieldType.Number, 20),
+						new TaskField("s", TaskFieldType.Label)
 					}
 				},
 				new TaskModel
 				{
+					TaskName = "Đọc tin nhắn",
+				},
+				new TaskModel
+				{
 
-					TaskName = "Lướt New Feed",
-					Fields =
-					{
-						new TaskField("Từ", TaskFieldType.Number, 10),
-						new TaskField("Đến", TaskFieldType.Number, 10),
-						new TaskField("s", TaskFieldType.Label)
-					}
+					TaskName = "Đọc thông báo",
 				},
 					new TaskModel
 					{
@@ -264,38 +357,40 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 					},
 					new TaskModel
 					{
-						TaskName = "Kết bạn theo từ khóa:",
+						TaskName = "Kết bạn theo gợi ý",
+						Fields =
+						{
+							new TaskField("Số người:",TaskFieldType.Number,5)
+						}
+					},
+					new TaskModel
+					{
+						TaskName = "Chấp nhận lời mời kết bạn",
 						Fields =
 						{
 							new TaskField("", TaskFieldType.Text),
-							//new TaskField("số người:", TaskFieldType.Label),
 							new TaskField("Số người:",TaskFieldType.Number,5)
 						}
 					},
 					new TaskModel
 					{
 						TaskName = "Đăng bài",
-						 Fields =
+						 Fields = new List<TaskField>
 					{
-						new TaskField("Chọn ảnh và video:", TaskFieldType.File),
-						new TaskField("Nội dung", TaskFieldType.MultiText, "")
-					}
+						new TaskField("",TaskFieldType.Media),
+						new TaskField("", TaskFieldType.Label, ""),
+						new TaskField("", TaskFieldType.File),
+
+					},
 					},
 
 					new TaskModel
 					{
-						TaskName = "Đăng video",
+						TaskName = "Tham gia nhóm theo từ khóa",
 						Fields =
 						{
-							new TaskField("", TaskFieldType.Text, "")
-						}
-					},
-					new TaskModel
-					{
-						TaskName = "Tham gia nhóm theo từ khóa:",
-						Fields =
-						{
-							new TaskField("", TaskFieldType.Text, "")
+							new TaskField("", TaskFieldType.Text, ""),
+							new TaskField("Số nhóm:",TaskFieldType.Number,5)
 						}
 					},
 };
@@ -308,11 +403,6 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			}
 
 		}
-
-
-
-
-
 
 
 		private async void OnFolderChanged(int folderIdKey)

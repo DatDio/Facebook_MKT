@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,8 @@ namespace Facebook_MKT.WPF.ViewModels.General_settings
 
 		}
 
-		private int _scale = 1; // Giá trị mặc định
-		public int Scale
+		private double _scale = 1; // Giá trị mặc định
+		public double Scale
 		{
 			get { return _scale; }
 			set
@@ -35,6 +36,5 @@ namespace Facebook_MKT.WPF.ViewModels.General_settings
 				OnPropertyChanged(nameof(APIURL));
 			}
 		}
-
 	}
 }
