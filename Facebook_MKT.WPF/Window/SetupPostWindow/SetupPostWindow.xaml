@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Facebook_MKT.WPF.Window.SetupPostWindow"
         mc:Ignorable="d"
          xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        WindowStartupLocation="CenterScreen"
         Title="SetupPostWindow" Height="550" Width="800">
     <StackPanel Background="{StaticResource backgroundColor}">
         <TextBox Text="{Binding Title, Mode=TwoWay}" 

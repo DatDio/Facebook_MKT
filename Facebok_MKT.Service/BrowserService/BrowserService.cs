@@ -63,7 +63,7 @@ namespace Facebok_MKT.Service.BrowserService
             //	position = GetNewPosition(800, 800, scale);
             //}
 
-            var arg = $"--window-position={position} --window-size=800,800 --force-device-scale-factor={scale} ";
+            var arg = $"--window-position={position} --window-size=800,800 --force-device-scale-factor={scale} --mute-audio --hide-crash-restore-bubble --disable-notifications --disable-popup-blocking";
 
             if (!string.IsNullOrEmpty(useragent))
             {
@@ -79,6 +79,7 @@ namespace Facebok_MKT.Service.BrowserService
 
             var startedResult = api.Start(createdProfileId, null, arg);
 
+            
             var browserLocation = Convert.ToString(startedResult["browser_location"]);
             var seleniumRemoteDebugAddress = Convert.ToString(startedResult["selenium_remote_debug_address"]);
             var gpmDriverPath = Convert.ToString(startedResult["selenium_driver_location"]);

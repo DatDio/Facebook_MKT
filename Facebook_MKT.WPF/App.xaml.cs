@@ -46,13 +46,13 @@ namespace Facebook_MKT.WPF
 
 			_host.Start();
 
-			//using (var scope = _host.Services.CreateScope())
-			//{
-			//	var context = scope.ServiceProvider.GetRequiredService<FBDataContext>();
-			//	//context.Database.EnsureDeleted(); // Xóa cơ sở dữ liệu
-			//	//context.Database.EnsureCreated();
-			//	context.Database.Migrate();
-			//}
+			using (var scope = _host.Services.CreateScope())
+			{
+				var context = scope.ServiceProvider.GetRequiredService<FBDataContext>();
+				//context.Database.EnsureDeleted(); // Xóa cơ sở dữ liệu
+				//context.Database.EnsureCreated();
+				context.Database.Migrate();
+			}
 
 			// Lấy MainWindow từ DI container và hiển thị nó nếu cần thiết
 			var window = _host.Services.GetRequiredService<MainWindow>();

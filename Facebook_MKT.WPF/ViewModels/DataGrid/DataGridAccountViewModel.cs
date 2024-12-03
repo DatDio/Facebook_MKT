@@ -38,6 +38,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 		private int _maxParallelTasks;
 		private string _apiGPMUrl;
 		private object lockPosition;
+		private FacebookAccountAPI FbAccountAPI;
 		private ObservableCollection<AccountModel> _accounts;
 		public ObservableCollection<AccountModel> Accounts
 		{
@@ -65,6 +66,8 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 		public ICommand SelectedOrUnSelectedCommand { get; }
 		public ICommand LoadDataGridAccountCommand { get; set; }
 		public ICommand GetAllPageCommand { get; set; }
+		public ICommand CheckLiveUIDCommand { get; set; }
+		public ICommand CheckLiveCookieCommand { get; set; }
 		public DataGridAccountViewModel(IAccountDataService accountdataService,
 										IPageDataService pagedataService,
 										ObservableCollection<AccountModel> AccountsSeleted,
@@ -377,10 +380,10 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 						catch
 						{
 							accountModel.Status = "Mở GPM lỗi!";
-							accountModel.TextColor=SystemContants.RowColorFail;
+							accountModel.TextColor = SystemContants.RowColorFail;
 						}
 						// Khởi động ChromeDriver cho account
-						
+
 
 						if (accountModel.Driver == null)
 						{
@@ -453,6 +456,94 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 			#region GetAllPageCommand
 			GetAllPageCommand = new RelayCommand<object>((a) =>
 			{
+				return ItemsSelected != null && ItemsSelected.Any() && _folderPageViewModel != null;
+			},
+			async (a) =>
+			{
+				//DataGridPageViewModel dataGridPageViewModel = new DataGridPageViewModel();
+				try
+				{
+					_cancellationTokenSource = new CancellationTokenSource();
+					_pauseEvent = new ManualResetEventSlim(true);
+
+
+					// Sử dụng Parallel.ForEachAsync với giới hạn số luồng
+					await Parallel.ForEachAsync(AccountsSeleted, new ParallelOptions
+					{
+						MaxDegreeOfParallelism = _propertyFileds.MaxParallelTasks, // Số luồng mong muốn
+						CancellationToken = _cancellationTokenSource.Token
+					}, async (accountModel, cancellationToken) =>
+					{
+						accountModel.TextColor = SystemContants.RowColorRunning;
+						_cancellationTokenSource.Token.ThrowIfCancellationRequested();
+						_pauseEvent.Wait();
+
+						FbAccountAPI = new FacebookAccountAPI(accountModel,
+							   _accountdataService, _pagedataService,
+							   _folderAccountViewModel.SelectedItem,
+							   _folderPageViewModel.SelectedItem);
+						var result = await FbAccountAPI.GetAllPageRestSharp();
+						if (result == null)
+						{
+							accountModel.TextColor = SystemContants.RowColorFail;
+							return;
+						}
+						foreach (var item in result)
+						{
+							Application.Current.Dispatcher.Invoke(() =>
+							{
+								DataGridPageViewModel.Pages.Add(item);
+							});
+						}
+					});
+				}
+				catch (OperationCanceledException)
+				{
+					App.Current.Dispatcher.Invoke(() =>
+					{
+						MessageBox.Show("Tiến trình đã bị hủy.");
+					});
+				}
+				catch
+				{
+
+				}
+				finally
+				{
+					IsRunning = false; // Đặt lại khi luồng hoàn thành
+					_pauseEvent.Dispose();
+					_pauseEvent = null;
+					App.Current.Dispatcher.Invoke(() =>
+					{
+						MessageBox.Show("Tool đã dừng!");
+					});
+					try
+					{
+
+						App.Current.Dispatcher.Invoke(() =>
+						{
+							// Tạo một bản sao của danh sách trước khi lặp
+							var accountsSnapshot = AccountsSeleted.ToList();
+
+							foreach (var accountModel in accountsSnapshot)
+							{
+								accountModel.IsSelected = false;
+							}
+						});
+
+					}
+					catch
+					{
+
+					}
+
+				}
+			});
+			#endregion
+
+			#region CheckLiveUIDCommand
+			CheckLiveUIDCommand = new RelayCommand<object>((a) =>
+			{
 				return ItemsSelected != null && ItemsSelected.Any();
 			},
 			async (a) =>
@@ -471,24 +562,106 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 						CancellationToken = _cancellationTokenSource.Token
 					}, async (accountModel, cancellationToken) =>
 					{
+						accountModel.TextColor = SystemContants.RowColorRunning;
 						_cancellationTokenSource.Token.ThrowIfCancellationRequested();
 						_pauseEvent.Wait();
 
-						var FbAccountAPI = new FacebookAccountAPI(accountModel,
-								_accountdataService, _pagedataService,
-								_folderAccountViewModel.SelectedItem.FolderIdKey,
-								_folderPageViewModel.SelectedItem.FolderIdKey);
-						var result = await FbAccountAPI.GetAllPageRestSharp();
-						if (result == null)
+						FbAccountAPI = new FacebookAccountAPI(accountModel,
+							   _accountdataService, _pagedataService,
+							   _folderAccountViewModel.SelectedItem);
+						var result = await FbAccountAPI.CheckLiveUid();
+						await _accountdataService.Update(accountModel.AccountIDKey, accountModel);
+						if (result == ResultModel.Success)
 						{
-							return;
+							accountModel.TextColor = SystemContants.RowColorSuccess;
 						}
-						foreach (var item in result)
+						else
 						{
-							Application.Current.Dispatcher.Invoke(() =>
+							accountModel.TextColor = SystemContants.RowColorFail;
+						}
+					});
+				}
+				catch (OperationCanceledException)
+				{
+					App.Current.Dispatcher.Invoke(() =>
+					{
+						MessageBox.Show("Tiến trình đã bị hủy.");
+					});
+				}
+				catch
+				{
+
+				}
+				finally
+				{
+					IsRunning = false; // Đặt lại khi luồng hoàn thành
+					_pauseEvent.Dispose();
+					_pauseEvent = null;
+					App.Current.Dispatcher.Invoke(() =>
+					{
+						MessageBox.Show("Tool đã dừng!");
+					});
+					try
+					{
+
+						App.Current.Dispatcher.Invoke(() =>
+						{
+							// Tạo một bản sao của danh sách trước khi lặp
+							var accountsSnapshot = AccountsSeleted.ToList();
+
+							foreach (var accountModel in accountsSnapshot)
 							{
-								DataGridPageViewModel.Pages.Add(item);
-							});
+								accountModel.IsSelected = false;
+							}
+						});
+
+					}
+					catch
+					{
+
+					}
+
+				}
+			});
+			#endregion
+
+			#region CheckLiveCookieCommand
+			CheckLiveCookieCommand = new RelayCommand<object>((a) =>
+			{
+				return ItemsSelected != null && ItemsSelected.Any();
+			},
+			async (a) =>
+			{
+				//DataGridPageViewModel dataGridPageViewModel = new DataGridPageViewModel();
+				try
+				{
+					_cancellationTokenSource = new CancellationTokenSource();
+					_pauseEvent = new ManualResetEventSlim(true);
+
+
+					// Sử dụng Parallel.ForEachAsync với giới hạn số luồng
+					await Parallel.ForEachAsync(AccountsSeleted, new ParallelOptions
+					{
+						MaxDegreeOfParallelism = _propertyFileds.MaxParallelTasks, // Số luồng mong muốn
+						CancellationToken = _cancellationTokenSource.Token
+					}, async (accountModel, cancellationToken) =>
+					{
+						accountModel.TextColor = SystemContants.RowColorRunning;
+						_cancellationTokenSource.Token.ThrowIfCancellationRequested();
+						_pauseEvent.Wait();
+
+						FbAccountAPI = new FacebookAccountAPI(accountModel,
+							   _accountdataService, _pagedataService,
+							   _folderAccountViewModel.SelectedItem);
+						var result = await FbAccountAPI.CheckLiveCookie();
+						await _accountdataService.Update(accountModel.AccountIDKey, accountModel);
+						if (result == ResultModel.Success)
+						{
+							accountModel.TextColor = SystemContants.RowColorSuccess;
+						}
+						else
+						{
+							accountModel.TextColor = SystemContants.RowColorFail;
 						}
 					});
 				}

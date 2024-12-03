@@ -1,4 +1,5 @@
-﻿using Faceebook_MKT.Domain.Models;
+﻿using Faceebook_MKT.Domain.Helpers;
+using Faceebook_MKT.Domain.Models;
 using System.ComponentModel;
 
 public class PageModel : INotifyPropertyChanged, ISelectable
@@ -17,7 +18,7 @@ public class PageModel : INotifyPropertyChanged, ISelectable
 		}
 	}
 
-	
+
 
 	private string _pageID;
 	public string PageID
@@ -35,14 +36,15 @@ public class PageModel : INotifyPropertyChanged, ISelectable
 
 	public int AccountIDKey { get; set; }
 	private string _textColor;
-		public string TextColor {
-			get => _textColor;
-			set
-			{
-				_textColor = value;
-				OnPropertyChanged(nameof(TextColor));
-			}
+	public string TextColor
+	{
+		get => _textColor;
+		set
+		{
+			_textColor = value;
+			OnPropertyChanged(nameof(TextColor));
 		}
+	}
 	private string _pageName;
 	public string PageName
 	{
@@ -84,6 +86,34 @@ public class PageModel : INotifyPropertyChanged, ISelectable
 			}
 		}
 	}
+
+	// Thuộc tính mới để đếm số video
+	private int _videoCount;
+	public int VideoCount
+	{
+		get
+		{
+			UpdateVideoCount();
+			return _videoCount;
+		}
+		set
+		{
+			if (_videoCount != value)
+			{
+				_videoCount = value;
+				OnPropertyChanged(nameof(VideoCount));
+				UpdateVideoCount();
+			}
+		}
+	}
+
+	private void UpdateVideoCount()
+	{
+		// Logic để tính số lượng video trong folder PageFolderVideo
+		// Giả sử bạn có một phương thức GetVideoCountFromFolder trả về số lượng video
+		VideoCount = FolderHelper.GetVideoCountFromFolder(PageFolderVideo);
+	}
+
 	private string _pageFolderName;
 	public string PageFolderName
 	{

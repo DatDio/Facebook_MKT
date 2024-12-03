@@ -1,6 +1,8 @@
 ﻿using Facebok_MKT.Service.DataService.Accounts;
 using Facebok_MKT.Service.DataService.Folders.FolderAccounts;
+using Facebok_MKT.Service.DataService.Folders.FolderGroups;
 using Facebok_MKT.Service.DataService.Folders.FolderPages;
+using Facebok_MKT.Service.DataService.Groups;
 using Facebok_MKT.Service.DataService.Pages;
 using Facebook_MKT.Data;
 using Facebook_MKT.Data.Entities;
@@ -26,8 +28,10 @@ namespace Facebook_MKT.WPF.HostBuilders
 			{
 				services.AddScoped<IAccountDataService, AccountDataService>();
 				services.AddScoped<IPageDataService, PageDataService>();
+				services.AddScoped<IGroupDataService, GroupDataService>();
 				services.AddScoped<IFolderDataService, FolderAccountDataService>();
 				services.AddScoped<IFolderPageDataService, FolderPageDataService>();
+				services.AddScoped<IFolderGroupDataService, FolderGroupDataService>();
 				services.AddScoped<DbContext, FBDataContext>();
 
 

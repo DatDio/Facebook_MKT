@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,12 +22,47 @@ namespace Facebook_MKT.WPF.ViewModels
 		public BaseViewModel()
 		{
 			lockFolder = new object();
+			CloseAllChromeCommand = new RelayCommand<object>((a) =>
+			{
+				return true;
+			},
+			async (a) =>
+			{
+				var Processs = new List<Process>();
+				Processs.AddRange(Process.GetProcessesByName("chromedriver"));
+				Processs.AddRange(Process.GetProcessesByName("chrome"));
+				foreach (var pr in Processs)
+				{
+					try
+					{
+						pr.Kill();
+					}
+					catch
+					{
+
+					}
+				}
+			});
 		}
 		protected ResultModel ResultStatus { get; set; }
 		protected double _scale;
 		protected string _apiGPMUrl;
 
-		private int _maxParallelTasks = 10;
+
+		//Chạy mỗi luồng random task trong tasklist đã chọn
+		private bool randomTaskInTaskList = false;
+		public bool RandomTaskInTaskList
+		{
+			get { return randomTaskInTaskList; }
+			set
+			{
+				randomTaskInTaskList = value;
+				OnPropertyChanged(nameof(RandomTaskInTaskList));
+			}
+		}
+
+
+		private int _maxParallelTasks = 1;
 		public int MaxParallelTasks
 		{
 			get { return _maxParallelTasks; }
@@ -39,7 +75,7 @@ namespace Facebook_MKT.WPF.ViewModels
 
 		public string PauseButtonContent => IsRunning ? "Pause" : "Resume";
 
-		protected bool _isRunning;
+		protected bool _isRunning = false;
 		public bool IsRunning
 		{
 			get => _isRunning;
@@ -54,15 +90,11 @@ namespace Facebook_MKT.WPF.ViewModels
 
 		public ICommand StopCommand { get; set; }
 		public ICommand PauseCommand { get; set; }
-
-
+		public ICommand CloseAllChromeCommand { get; set; }
 
 
 		protected ManualResetEventSlim _pauseEvent;
 		protected CancellationTokenSource _cancellationTokenSource;
-
-
-
 
 
 		public virtual void Dispose() { }

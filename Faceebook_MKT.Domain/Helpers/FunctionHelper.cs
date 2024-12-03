@@ -1,8 +1,11 @@
-﻿using Leaf.xNet;
+﻿using Faceebook_MKT.Domain.Models;
+using Leaf.xNet;
 using OtpNet;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -153,5 +156,19 @@ namespace Faceebook_MKT.Domain.Helpers
 
 			return p;
 		}
+
+		public static void ShuffleTaskList(ObservableCollection<TaskModel> TaskList)
+		{
+			var _random = new Random();
+			for (int i = TaskList.Count - 1; i > 0; i--)
+			{
+				int j = _random.Next(i + 1);
+				var temp = TaskList[i];
+				TaskList[i] = TaskList[j];
+				TaskList[j] = temp;
+			}
+		}
+
+		
 	}
 }

@@ -2,11 +2,13 @@
 using Facebok_MKT.Service.DataService.Folders.FolderPages;
 using Facebook_MKT.WPF.Window.AddFolderWindow;
 using Faceebook_MKT.Domain.Models;
+using Faceebook_MKT.Domain.Systems;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +17,7 @@ using System.Windows.Input;
 
 namespace Facebook_MKT.WPF.ViewModels.Combobox
 {
-	public class FolderPageViewModel:BaseViewModel
+	public class FolderPageViewModel : BaseViewModel
 	{
 		private readonly IFolderPageDataService _folderPageDataService;
 		public ObservableCollection<FolderPageModel> Items { get; private set; } = new ObservableCollection<FolderPageModel>();
@@ -98,6 +100,10 @@ namespace Facebook_MKT.WPF.ViewModels.Combobox
 					var result = MessageBox.Show("Bạn có chắc muốn xóa thư mục này?", "Cảnh Báo", MessageBoxButton.YesNo, MessageBoxImage.Question);
 					if (result == MessageBoxResult.Yes)
 					{
+						if (Directory.Exists(Path.GetFullPath($"{SystemContants.FolderVideoPage}/{SelectedItem.FolderName}")))
+						{
+							Directory.Delete(Path.GetFullPath($"{SystemContants.FolderVideoPage}/{SelectedItem.FolderName}"));
+						}
 						try
 						{
 							var resultDelete = await DeleteFolderAsync(SelectedItem);

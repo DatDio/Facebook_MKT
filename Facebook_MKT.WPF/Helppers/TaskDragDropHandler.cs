@@ -30,31 +30,39 @@ namespace Facebook_MKT.WPF.Helppers
 			if (dropInfo.Data is not TaskModel sourceItem)
 				return;
 
-			int oldIndex = _taskList.IndexOf(sourceItem);
-			int insertIndex = dropInfo.InsertIndex;
+			try
+			{
+				int oldIndex = _taskList.IndexOf(sourceItem);
+				int insertIndex = dropInfo.InsertIndex;
 
-			if (insertIndex < 0)
-			{
-				insertIndex = 0;
-			}
-			else if (insertIndex > _taskList.Count)
-			{
-				insertIndex = _taskList.Count;
-			}
-
-			if (oldIndex == -1)
-			{
-				var newTaskItem = CloneTaskModel(sourceItem);
-				_taskList.Insert(insertIndex, newTaskItem);
-			}
-			else
-			{
-				if (oldIndex != insertIndex)
+				if (insertIndex < 0)
 				{
-					_taskList.RemoveAt(oldIndex);
-					_taskList.Insert(insertIndex, sourceItem);
+					insertIndex = 0;
+				}
+				else if (insertIndex > _taskList.Count)
+				{
+					insertIndex = _taskList.Count;
+				}
+
+				if (oldIndex == -1)
+				{
+					var newTaskItem = CloneTaskModel(sourceItem);
+					_taskList.Insert(insertIndex, newTaskItem);
+				}
+				else
+				{
+					if (oldIndex != insertIndex)
+					{
+						_taskList.RemoveAt(oldIndex);
+						_taskList.Insert(insertIndex, sourceItem);
+					}
 				}
 			}
+			catch
+			{
+
+			}
+
 			// Cập nhật chỉ số cho tất cả các mục trong danh sách
 			UpdateIndices();
 		}

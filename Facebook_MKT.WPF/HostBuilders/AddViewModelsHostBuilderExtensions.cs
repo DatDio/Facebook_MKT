@@ -32,6 +32,7 @@ namespace Facebook_MKT.WPF.HostBuilders
 				services.AddScoped<MainViewModel>();
 				services.AddScoped<AccountInteractViewModel>();
 				services.AddScoped<GeneralSettingsViewModel>();
+
 				//services.AddSingleton<FolderAccountViewModel>();
 				//services.AddSingleton<FolderPageViewModel>();
 

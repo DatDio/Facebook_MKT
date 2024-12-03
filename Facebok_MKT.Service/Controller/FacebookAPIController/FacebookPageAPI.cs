@@ -17,20 +17,21 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 	{
 		private IPageDataService _pageDataService;
 		private PageModel _pageModel;
+		private FolderPageModel _folderPageModel;
 		public FacebookPageAPI(AccountModel accountModel,
 			IAccountDataService accountDataService,
 			IPageDataService pagedataService,
-			int folderAccountIDKey,
-			int folderPageIDKey,
+			FolderModel folderAccountModel,
+			FolderPageModel folderPageModel,
 			IPageDataService pageDataService,
 			PageModel pageModel) : base(accountModel,
 										accountDataService,
 										pagedataService,
-										folderAccountIDKey,
-										folderPageIDKey)
+										folderAccountModel)
 		{
 			_pageDataService = pageDataService;
 			_pageModel = pageModel;
+			_folderPageModel = folderPageModel;
 		}
 
 	}

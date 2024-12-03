@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Facebook_MKT.WPF.ViewModels.DataGrid;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +25,10 @@ namespace Facebook_MKT.WPF.Controls.DataGrid.Groups
         {
             InitializeComponent();
         }
-    }
+		private void myDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+		{
+			// Thiết lập Header của từng hàng để hiển thị số thứ tự
+			e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+		}
+	}
 }

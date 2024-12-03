@@ -25,6 +25,11 @@ namespace Facebook_MKT.WPF.Controls.DataGrid.Pages
         {
             InitializeComponent();
         }
+		private void myDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+		{
+			// Thiết lập Header của từng hàng để hiển thị số thứ tự
+			e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+		}
 		private void CheckBox_Checked(object sender, RoutedEventArgs e)
 		{
 			if (DataContext is DataGridPageViewModel viewModel)

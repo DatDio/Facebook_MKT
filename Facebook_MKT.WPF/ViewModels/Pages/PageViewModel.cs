@@ -12,6 +12,7 @@ using Facebook_MKT.WPF.ViewModels.General_settings;
 using Faceebook_MKT.Domain.AnditectBrowserController;
 using Faceebook_MKT.Domain.Helpers;
 using Faceebook_MKT.Domain.Models;
+using Faceebook_MKT.Domain.Systems;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Hosting;
@@ -34,8 +35,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Vlc.DotNet.Core.Interops.Signatures;
-
+using Facebook_MKT.WPF.Window.SetupPostWindow;
 namespace Facebook_MKT.WPF.ViewModels.Pages
 {
 	public enum AddAccountType
@@ -52,7 +52,7 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 		public ObservableCollection<TaskModel> TaskList { get; set; }
 		public ObservableCollection<TaskModel> PageTasks { get; set; }
 		public IDropTarget TaskDropHandler { get; }
-		private List<string> _proxyList;
+		//private List<string> _proxyList;
 
 		#region Folder, Datagrid, BrowserService
 		public FolderAccountViewModel FolderAccountsViewModel { get; }
@@ -64,6 +64,10 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 		#endregion
 
 		public ICommand StartCommand { get; set; }
+		//BrowseCommand là command của task script
+		public ICommand BrowseCommand { get; set; }
+		public ICommand SetUpPostApiCommand { get; set; }
+		public ICommand RemoveTaskCommand { get; set; }
 		//public ICommand StopCommand { get; set; }
 		//public ICommand PauseCommand { get; set; }
 		public ObservableCollection<AccountModel> AllAccountModels { get; set; } = new ObservableCollection<AccountModel>();
@@ -89,7 +93,7 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 			_generalSettings.PropertyChanged += OnGeneralSettingsChanged;
 			_scale = _generalSettings.Scale;
 			_apiGPMUrl = _generalSettings.APIURL;
-			_proxyList = new List<string>();
+			//_proxyList = new List<string>();
 			_accountDataService = accountDataService;
 			_pageDataService = pageDataService;
 			#region Hiện Folder
@@ -120,14 +124,24 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 				if (TaskList != null && TaskList.Count > 0
 					&& PagesSeleted.Count > 0)
 					return true;
+				if (IsRunning == true) return false;
 				return false;
 			}, async (a) =>
 			{
-				IsRunning = true; 
+				IsRunning = true;
 
 				// Tải tất cả các account một lần trước khi bắt đầu các luồng
 				LoadAllAccounts();
-				var allAccountModels = AllAccountModels.ToDictionary(acc => acc.AccountIDKey);
+
+				var allAccountModels = new Dictionary<int, AccountModel>();
+
+				foreach (var acc in AllAccountModels)
+				{
+					if (!allAccountModels.ContainsKey(acc.AccountIDKey))
+					{
+						allAccountModels.Add(acc.AccountIDKey, acc);
+					}
+				}
 
 				_cancellationTokenSource = new CancellationTokenSource();
 				_pauseEvent = new ManualResetEventSlim(true);
@@ -191,16 +205,78 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 			});
 			#endregion
 
+			#region SetUpPost
+			BrowseCommand = new RelayCommand<object>((taskModel) => true,
+			async (taskModel) =>
+			{
+				var t = TaskList;
+				var taskmodel = taskModel as TaskModel;
 
+				var SetupPostWindow = new SetupPostWindow();
+				var SetupPostViewModel = new SetupPostViewModel(taskmodel);
+				SetupPostWindow.DataContext = SetupPostViewModel;
+				bool? result = SetupPostWindow.ShowDialog();
 
+				// Kiểm tra kết quả nếu cần
+				//if (result == true)
+				//{
+
+				//}
+			});
+			#endregion
+
+			SetUpPostApiCommand = new RelayCommand<object>((taskModel) => true,
+			async (taskModel) =>
+			{
+				var t = TaskList;
+				var taskmodel = new TaskModel
+				{
+					TaskName = "Đăng bài",
+					Fields = new List<TaskField>
+					{
+						new TaskField("",TaskFieldType.Media),
+						new TaskField("", TaskFieldType.Label, ""),
+						new TaskField("", TaskFieldType.File),
+					}
+				};
+
+				var SetupPostWindow = new SetupPostWindow();
+				var SetupPostViewModel = new SetupPostViewModel(taskmodel);
+				SetupPostWindow.DataContext = SetupPostViewModel;
+				bool? result = SetupPostWindow.ShowDialog();
+
+				// Kiểm tra kết quả nếu cần
+				//if (result == true)
+				//{
+
+				//}
+				var tsg = TaskList;
+			});
+
+			#region RemoveTaskCommand
+			RemoveTaskCommand = new RelayCommand<TaskModel>((a) =>
+			{
+				if (IsRunning) return false;
+				return true;
+			}, async (a) =>
+			{
+				if (a != null && TaskList.Contains(a))
+				{
+					TaskList.Remove(a);
+				}
+			});
+			#endregion
 		}
 
 		private async Task OneThread(CancellationToken token,
 			Dictionary<int, AccountModel> allAccountModels)
 		{
+			// Tạo bản sao của TaskList cho luồng này
+			var taskListForThread = new ObservableCollection<TaskModel>(TaskList);
 			string position = "";
 			AccountModel accountModel = null;
-			FacebookBrowserPageController FBBrowserController = null;
+			FacebookBrowserPageController fbBrowserController = null;
+			BrowserService browserService = null;
 			lock (_lockPosition)
 			{
 				position = BrowserPositionHelper.GetNewPosition(800, 800, _scale);
@@ -221,7 +297,7 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 							Console.WriteLine($"Account với ID {accountIDKey} không tồn tại.");
 							continue;
 						}
-						var browserService = new BrowserService(accountModel, _accountDataService);
+						browserService = new BrowserService(accountModel, _accountDataService);
 
 
 						accountModel.Status = "Đang mở trình duyệt...";
@@ -239,67 +315,102 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 						{
 
 							accountModel.Status = "Mở GPM lỗi!";
+							foreach (var pageModel in accountGroup.Pages)
+							{
+								pageModel.IsSelected = false;
+								pageModel.PageStatus = "Mở GPM lỗi!";
+								pageModel.TextColor = SystemContants.RowColorFail;
+							}
 							continue;
 						}
 
 						// Xử lý từng trang liên quan đến account
 						foreach (var pageModel in accountGroup.Pages)
 						{
+							pageModel.TextColor = SystemContants.RowColorRunning;
 							_pauseEvent.Wait();
 							_cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
 							// Khởi tạo FacebookBrowserController cho mỗi trang
-							 FBBrowserController = new FacebookBrowserPageController(
+							fbBrowserController = new FacebookBrowserPageController(
 								accountModel, _accountDataService, _pageDataService,
 								_pauseEvent, _cancellationTokenSource, pageModel
 							);
 
-
-							var ResultStatus = await FBBrowserController.Initialization();
+							var ResultStatus = await fbBrowserController.Initialization();
 
 							if (ResultStatus == ResultModel.Fail)
 							{
+								pageModel.IsSelected = false;
+								pageModel.TextColor = SystemContants.RowColorFail;
+								continue;
+							}
+							else if (ResultStatus == ResultModel.CheckPoint)
+							{
+								pageModel.IsSelected = false;
+								pageModel.TextColor = SystemContants.RowColorFail;
 								break;
 							}
 
-							// Thực thi các tác vụ liên quan đến page
-							foreach (var task in TaskList)
+							if (RandomTaskInTaskList)
+							{
+								FunctionHelper.ShuffleTaskList(taskListForThread);
+							}
+							foreach (var task in taskListForThread)
 							{
 								_pauseEvent.Wait();
 								_cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-								var result = await FBBrowserController.ExecuteTask(task);
+								ResultStatus = await fbBrowserController.CheckLogined();
 
-								if (result == ResultModel.Fail || result == ResultModel.CheckPoint)
+								if (ResultStatus == ResultModel.Fail)
 								{
-									// Ngắt vòng lặp nếu gặp lỗi
+									pageModel.IsSelected = false;
+									pageModel.TextColor = SystemContants.RowColorFail;
 									break;
 								}
+
+								try
+								{
+									var result = await fbBrowserController.ExecuteTask(task);
+
+									if (result == ResultModel.CheckPoint)
+									{
+										pageModel.IsSelected = false;
+										pageModel.TextColor = SystemContants.RowColorFail;
+										break;
+									}
+								}
+								catch
+								{
+
+								}
+								
 							}
+							pageModel.IsSelected = false;
+							pageModel.TextColor = SystemContants.RowColorSuccess;
 						}
+						browserService.CloseChrome();
 					}
 					else
 					{
 						// Không còn account nào để xử lý, thoát khỏi vòng lặp
 						break;
 					}
+
 				}
 			}
-			catch (OperationCanceledException)
-			{
-				// Xử lý khi có yêu cầu hủy tác vụ
-				//Console.WriteLine("Tác vụ đã bị hủy.");
-			}
-			catch
-			{
+			//catch (OperationCanceledException)
+			//{
 
+			//}
+			catch (Exception ex)
+			{
+				browserService.CloseChrome();
+				//MessageBox.Show(ex.Message);
+				Debug.WriteLine(ex.Message);
 			}
 		}
-
-
-
-
-
 
 
 		private async void OnFolderAccountChanged(int folderIdKey)
@@ -316,7 +427,7 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 		}
 		private async void LoadAllAccounts()
 		{
-			// Fetch accounts from the database using the AccountDataService
+			AllAccountModels.Clear();
 			try
 			{
 				var listAccountModels = await _accountDataService.GetAll();
@@ -330,16 +441,8 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 		}
 		private void LoadInitialPageTasks()
 		{
-			// Tạo danh sách TaskModel mới
 			var newTasks = new List<TaskModel>
 {
-				//new TaskModel
-				//{
-
-				//	TaskName = "Đăng nhập"
-
-				//},
-
 				new TaskModel
 				{
 
@@ -362,10 +465,10 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 						new TaskField("s", TaskFieldType.Label)
 					}
 				},
-				new TaskModel
-				{
-					TaskName = "Đọc tin nhắn",
-				},
+				//new TaskModel
+				//{
+				//	TaskName = "Đọc tin nhắn",
+				//},
 				new TaskModel
 				{
 
@@ -398,10 +501,17 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 						new TaskField("",TaskFieldType.Media),
 						new TaskField("", TaskFieldType.Label, ""),
 						new TaskField("", TaskFieldType.File),
-
 					},
 					},
-
+					new TaskModel
+					{
+						TaskName = "Đăng reel",
+						 Fields = new List<TaskField>
+					{
+							new TaskField("Tittle", TaskFieldType.Text, ""),
+							new TaskField("Comment", TaskFieldType.Text, ""),
+					},
+					},
 					new TaskModel
 					{
 						TaskName = "Tham gia nhóm theo từ khóa",
@@ -413,7 +523,6 @@ namespace Facebook_MKT.WPF.ViewModels.Pages
 					},
 };
 			int Index = 1;
-			// Thêm danh sách TaskModel vào AccountTasks
 			foreach (var task in newTasks)
 			{
 				task.Index = Index++;

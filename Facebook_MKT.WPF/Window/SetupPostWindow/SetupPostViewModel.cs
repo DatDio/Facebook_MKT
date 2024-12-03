@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using NReco.VideoInfo;
 using System.Windows.Controls;
-using Vlc.DotNet.Core;
 using MediaToolkit.Model;
 using MediaToolkit;
 using MediaToolkit.Options;

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,14 +23,17 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 {
 	public class FacebookAccountAPI : BaseFacebookAPI
 	{
+		
 		private object _lockFolder = new object();
+		private FolderPageModel _folderPageModel;
 		public FacebookAccountAPI(AccountModel accountModel,
 			IAccountDataService accountDataService,
 			IPageDataService pagedataService,
-			int folderAccountIDKey,
-			int folderPageIDKey) : base(accountModel, accountDataService, pagedataService, folderAccountIDKey,
-			 folderPageIDKey)
+			FolderModel folderAccountModel,
+			FolderPageModel folderPageModel = null) : base(accountModel, accountDataService, pagedataService, folderAccountModel
+			)
 		{
+			_folderPageModel = folderPageModel;
 		}
 
 		public async Task<ObservableCollection<PageModel>> GetAllPageRestSharp()
@@ -41,6 +45,7 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 			}
 			try
 			{
+				_accountModel.Status = "Get all page ...";
 				var listPageModels = new ObservableCollection<PageModel>();
 				RestClientOptions clientOptions = new RestClientOptions("https://graph.facebook.com/")
 				{
@@ -108,17 +113,17 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 							PageID = matches[i].Groups[1].Value,
 							AccountIDKey = _accountModel.AccountIDKey,
 							PageName = pageName,
-							FolderIdKey = _folderPageIDKey,
+							FolderIdKey = _folderPageModel.FolderIdKey,
 
 						};
 						lock (_lockFolder)
 						{
-							if (!Directory.Exists($"{SystemContants.FolderVideoPage}/{pageID}"))
+							if (!Directory.Exists($"{SystemContants.FolderVideoPage}/{_folderPageModel.FolderName}/{pageID}"))
 							{
-								Directory.CreateDirectory($"{SystemContants.FolderVideoPage}/{pageID}");
-								
+								Directory.CreateDirectory($"{SystemContants.FolderVideoPage}/{_folderPageModel.FolderName}/{pageID}");
+
 							}
-							pageModel.PageFolderVideo = $"{SystemContants.FolderVideoPage}/{pageID}";
+							pageModel.PageFolderVideo = $"{SystemContants.FolderVideoPage}/{_folderPageModel.FolderName}/{pageID}";
 						}
 
 						listPageModels.Add(pageModel);
@@ -402,21 +407,21 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 				{
 					_accountModel.Status = "Login bị checkpoint 956";
 					_accountDataService.Update(_accountModel.AccountIDKey, _accountModel);
-					return ResultModel.CheckPoint956;
+					return ResultModel.CheckPoint;
 				}
 
 				if (refer.Contains("282/"))
 				{
 					_accountModel.Status = "Login bị checkpoint 282";
 					_accountDataService.Update(_accountModel.AccountIDKey, _accountModel);
-					return ResultModel.CheckPoint956;
+					return ResultModel.CheckPoint;
 				}
 
 				if (refer.Contains("checkpoint"))
 				{
 					_accountModel.Status = "Login bị checkpoint ";
 					_accountDataService.Update(_accountModel.AccountIDKey, _accountModel);
-					return ResultModel.CheckPoint956;
+					return ResultModel.CheckPoint;
 				}
 
 				account.Cookie = rq.Cookies.GetCookieHeader("https://www.facebook.com/");
@@ -662,5 +667,172 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 				return ResultModel.Fail;
 			return ResultModel.Success;
 		}
+		public async Task<ResultModel> CheckLiveUid()
+		{
+			_accountModel.Status = "Đang check live uid ...";
+
+			try
+			{
+				var options = new RestClientOptions("https://graph.facebook.com")
+				{
+					UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
+					MaxTimeout = -1,
+					Proxy = FunctionHelper.ParseProxyRestSharp(_accountModel.Proxy),
+				};
+				var client = new RestClient(options);
+				var request = new RestRequest($"/{_accountModel.UID}/picture?width=500&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662&redirect=false", Method.Get);
+				RestResponse response =  client.ExecuteAsync(request).Result;
+				if (response.Content == null)
+				{
+					_accountModel.Status = "Check Uid Body Null";
+					return ResultModel.Fail;
+				}
+
+				if (response.Content.Contains("368"))
+				{
+					_accountModel.Status = "Check Uid bị Spam Ip";
+					return ResultModel.Fail;
+				}
+
+				if (!response.Content.Contains("error") && !response.Content.Contains(".gif"))
+				{
+					_accountModel.Status = "Uid Live";
+					return ResultModel.Success;
+				}
+				else
+				{
+					_accountModel.Status = "Uid Die";
+					return ResultModel.Fail;
+				}
+			}
+			catch
+			{
+				//
+			}
+			_accountModel.Status = "Check Uid Error";
+			return ResultModel.Fail;
+		}
+
+
+		public async Task<ResultModel> CheckLiveCookie()
+		{
+			_accountModel.Status = "Đang check live cookie ...";
+			var refer = "";
+			using (var rq = new HttpRequest())
+			{
+				rq.UserAgent = _accountModel.UserAgent;
+				rq.KeepAlive = true;
+				rq.AllowAutoRedirect = true;
+				rq.Cookies = new CookieStorage();
+				FunctionHelper.SetCookieToRequestXnet(rq, _accountModel.Cookie);
+				rq.Proxy = FunctionHelper.ConvertToProxyClient(_accountModel.Proxy);
+
+				FunctionHelper.AddHeaderxNet(rq, @"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                                                Accept-Language:en-US,en;q=0.9
+                                                sec-ch-ua-mobile:?0
+                                                sec-ch-ua-platform:\""Windows\""
+                                                Sec-Fetch-Dest:document
+                                                Sec-Fetch-Mode:navigate
+                                                Sec-Fetch-Site:none
+                                                Sec-Fetch-User:?1
+                                                Upgrade-Insecure-Requests:1");
+
+				try
+				{
+					refer = rq.Get("https://www.facebook.com/settings").Address.AbsoluteUri;
+				}
+				catch
+				{
+					try
+					{
+						refer = rq.Response.Address.AbsoluteUri;
+					}
+					catch
+					{
+						//
+					}
+				}
+
+				if (refer.Contains("facebook.com/settings"))
+				{
+					refer = null;
+					_accountModel.Status = "Cookie Live";
+					return ResultModel.Success;
+				}
+
+				if (refer.Contains("facebook.com/login") || refer.Contains("facebook.com/index"))
+				{
+					refer = null;
+					_accountModel.Status = "Cookie Out";
+					return ResultModel.Fail;
+				}
+
+				if (refer.Contains("956/") || refer.Contains("facebook.com/nt/screen"))
+				{
+					refer = null;
+					_accountModel.Status = "Cookie CP 956";
+					return ResultModel.Fail;
+				}
+
+				if (refer.Contains("282/"))
+				{
+					refer = null;
+					_accountModel.Status = "Cookie CP 282";
+					return ResultModel.Fail;
+				}
+
+				if (refer.Contains("checkpoint"))
+				{
+					var body = "";
+					FunctionHelper.AddHeaderxNet(rq, @"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                                                Accept-Language:en-US,en;q=0.9
+                                                sec-ch-ua-mobile:?0
+                                                sec-ch-ua-platform:\""Windows\""
+                                                Sec-Fetch-Dest:document
+                                                Sec-Fetch-Mode:navigate
+                                                Sec-Fetch-Site:none
+                                                Sec-Fetch-User:?1
+                                                Upgrade-Insecure-Requests:1");
+					try
+					{
+						body = rq.Get("https://mbasic.facebook.com/settings").ToString();
+					}
+					catch
+					{
+						try
+						{
+							body = rq.Response.ToString();
+						}
+						catch
+						{
+							//
+						}
+					}
+
+					var stt = "";
+					var content = RegexHelper.GetValueFromGroup("<div class=\"k\">(.*?)<\\/div><\\/section>", body);
+					var matches = Regex.Matches(content, "<div>");
+					if (matches.Count > 1)
+					{
+						stt += $"Cookie checkpoint {matches.Count} dòng";
+					}
+					else
+					{
+						stt += "Cookie checkpoint";
+					}
+
+					refer = null;
+					body = null;
+					_accountModel.Status = stt;
+					return ResultModel.Fail;
+				}
+			}
+
+			refer = null;
+			_accountModel.Status = "Cookie Die";
+			return ResultModel.Fail;
+		}
+
+		
 	}
 }

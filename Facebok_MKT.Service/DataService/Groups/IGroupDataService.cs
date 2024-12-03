@@ -10,7 +10,7 @@ namespace Facebok_MKT.Service.DataService.Groups
 	public interface IGroupDataService
 	{
 		Task<List<GroupModel>> GetAll();
-		Task<List<GroupModel>> GetByFolderIdKey(int fodlerId);
+		Task<List<GroupModel>> GetByFolderIdKey(int folderId);
 		Task<bool> Create(GroupModel model);
 		Task<bool> Update(string id, GroupModel model);
 		Task<bool> Delete(string id);

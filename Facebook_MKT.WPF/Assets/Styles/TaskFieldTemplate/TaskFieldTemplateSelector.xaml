@@ -26,7 +26,7 @@
     <!-- Template for Label -->
     <DataTemplate x:Key="LabelFieldTemplate">
         <StackPanel Orientation="Horizontal">
-            <Label Content="{Binding Label}" Margin="0,10,10,10" VerticalAlignment="Center" />
+            <Label Content="{Binding Label}" Margin="0,10,10,10" MaxWidth="1000" VerticalAlignment="Center" />
         </StackPanel>
     </DataTemplate>
     <!-- Template for Number -->

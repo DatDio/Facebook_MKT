@@ -53,9 +53,10 @@
 
                         <Button
                 Content="Close All Chrome"
+                Command="{Binding CloseAllChromeCommand}"
                 ToolTip="Tắt toàn bộ chrome"
                 Margin="0,0,20,0"
-                IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+               
                 Style="{StaticResource StopButtonStyle}">
                         </Button>
 
@@ -130,7 +131,7 @@
                                         </Button>
                                     </Border>
                                 </StackPanel>
-                                <datagridPage:DataGridPage DataContext="{Binding DataGridPageViewModel}" />
+                                <datagridPage:DataGridPage DataContext="{Binding DataGridPageViewModel}"/>
                             </StackPanel>
                         </Grid>
                     </ScrollViewer>
@@ -138,11 +139,11 @@
             </TabItem>
 
 
-            <TabItem Header="Config Script">
+            <TabItem Header="Config Task Script">
 
                 <StackPanel Margin="20,20,20,0" >
                     <TextBlock Text="Script:" FontSize="18" FontWeight="Bold" />
-
+                    <CheckBox IsChecked="{Binding RandomTaskInTaskList}" Content="Chạy random task" Margin="0,5,5,5" FontWeight="Bold" FontSize="13"></CheckBox>
                     <StackPanel Margin="0,10,0,20">
                         <ListBox ItemsSource="{Binding TaskList}" 
    SelectionMode="Single"
@@ -235,6 +236,101 @@
                 </StackPanel>
 
             </TabItem>
+
+            <TabItem Header="Config Task Api">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+                    <StackPanel>
+                        <Border BorderBrush="Black" BorderThickness="2" Height="210" Padding="12">
+                            <StackPanel Orientation="Horizontal" ToolTip="Đăng bài bằng api chỉ đăng ảnh và có thể có comment">
+                                <StackPanel >
+                                    <TextBlock Text="Đăng Bài Page (chỉ đăng ảnh):" FontSize="14" FontWeight="DemiBold" ></TextBlock>
+                                </StackPanel>
+                                
+                                <StackPanel>
+                                    <!--Media để hiện ảnh,video-->
+                                    <StackPanel>
+
+                                        <ListBox x:Name="MediaListBox" 
+Margin="0"
+ItemsSource="{Binding Value}" 
+ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                            <ListBox.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ListBox.ItemsPanel>
+
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Vertical" Margin="0">
+                                                        <Grid Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <!-- Hiển thị thumbnail của video -->
+
+                                                            <Image Source="{Binding ThumbnailPath}" 
+      Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+      Stretch="UniformToFill"/>
+
+                                                            <!-- Hiển thị biểu tượng nếu là video -->
+                                                            <materialDesign:PackIcon Kind="ArrowRightDropCircleOutline" 
+                          Visibility="{Binding IsVideo, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          HorizontalAlignment="Center" 
+                          VerticalAlignment="Center" 
+                          Width="40" 
+                          Height="40" 
+                          Foreground="White" />
+
+                                                            <!-- Hiển thị ảnh nếu là hình ảnh -->
+                                                            <Image Source="{Binding FilePath}" 
+      Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}"
+      Stretch="UniformToFill"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+
+                                        </ListBox>
+                                        
+                                        
+                                    </StackPanel>
+                                    
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding Label}" Margin="0,10,10,10" MaxWidth="1000" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    
+                                    <StackPanel >
+                                        <Border  Margin="0,0,0,0" Background="Transparent">
+
+                                            <Button
+                    Height="40"
+                    Command="{Binding SetUpPostApiCommand}" 
+                    Background="Transparent"
+                    BorderThickness="0">
+                                                <materialDesign:PackIcon 
+ Height="40"
+     Width="60"
+     ToolTip="Cấu hình"
+ Kind="ContentSaveCog" 
+ Foreground="White"
+ HorizontalAlignment="Right"
+ VerticalAlignment="Center"/>
+
+                                            </Button>
+                                        </Border>
+                                        <Label Margin="20,0,0,0" Content="Cấu hình"></Label>
+                                    </StackPanel>
+                                    
+                                </StackPanel>
+                            </StackPanel>
+
+                        </Border>
+
+                       
+                        
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            
         </TabControl>
        
     

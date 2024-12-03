@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace Facebook_MKT.Data
 {
-	//public class FBDataContextFactory : IDesignTimeDbContextFactory<FBDataContext>
-	//{
-	//	public FBDataContext CreateDbContext(string[] args)
-	//	{
-	//		var optionsBuilder = new DbContextOptionsBuilder<FBDataContext>();
-	//		var path = Path.GetFullPath("FacebookMKT.db");
-	//		optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
+	public class FBDataContextFactory : IDesignTimeDbContextFactory<FBDataContext>
+	{
+		public FBDataContext CreateDbContext(string[] args)
+		{
+			var optionsBuilder = new DbContextOptionsBuilder<FBDataContext>();
+			var path = Path.GetFullPath("FacebookMKT.db");
+			optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
 
-	//		return new FBDataContext(optionsBuilder.Options);
-	//	}
-	//}
+			return new FBDataContext(optionsBuilder.Options);
+		}
+	}
 }

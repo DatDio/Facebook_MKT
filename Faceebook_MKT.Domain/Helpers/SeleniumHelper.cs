@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows.Markup;
+using System.Diagnostics;
 namespace Faceebook_MKT.Domain.Helpers
 {
 	public class SeleniumHelper
@@ -100,7 +101,7 @@ namespace Faceebook_MKT.Domain.Helpers
 		{
 			try
 			{
-				//	var text = driver.FindElement(locator).Text;
+					var text = driver.FindElement(locator).Text;
 				return driver.FindElements(locator)[count].Text;
 			}
 			catch
@@ -186,12 +187,39 @@ namespace Faceebook_MKT.Domain.Helpers
 			{
 				try
 				{
+					//content = "E:\\Facebook_MKT\\Facebook_MKT.WPF\\bin\\Debug\\net8.0-windows\\FolderVideoPage\\Page Mẹ Và Bé\\61567998452847\\chời ơi tui cưng xỉu lun á,1 dô giỏ hàng e oder 1 em bé dề nuôi hem ạ \U0001f923\U0001f923\U0001f923 #embecuame  #babydangyeu  #viaconyeu  #cucvangcuame  #dochoitreem  #cucvangcuaem❤️  #dothudongchobe.mp4";
 					driver.FindElements(locator)[count].SendKeys(content);
 
 					return true;
 				}
 				catch
 				{
+					Thread.Sleep(1000);
+				}
+			}
+			return false;
+
+		}
+
+		public static bool SendKeysWithEmoji(ChromeDriver driver, By locator, string content, int loop = 20, int count = 0)
+		{
+			for (int i = 0; i < loop; i++)
+			{
+				try
+				{
+					var element = driver.FindElements(locator)[count];
+
+					// Sao chép toàn bộ nội dung vào Clipboard
+					ClipboardHelper.SetText(content);
+
+					// Dán nội dung từ Clipboard vào trường nhập liệu
+					element.SendKeys(OpenQA.Selenium.Keys.Control + "v");
+
+					return true;
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine("Error: " + ex.Message);
 					Thread.Sleep(1000);
 				}
 			}

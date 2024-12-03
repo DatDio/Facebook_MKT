@@ -4,30 +4,39 @@ using Facebok_MKT.Service.DataService.Groups;
 using Facebok_MKT.Service.DataService.Pages;
 using Faceebook_MKT.Domain.Helpers;
 using Faceebook_MKT.Domain.Models;
+using Faceebook_MKT.Domain.Systems;
 using Leaf.xNet;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Facebok_MKT.Service.Controller.FacebookAPIController
 {
 	public class FacebookGroupAPI : BaseFacebookAPI
 	{
+		public event Action<GroupModel> OnGroupFound;
+
 		private GroupModel _groupModel;
 		IGroupDataService _groupDataService;
+		FolderGroupModel _folderGroupModel;
 		public FacebookGroupAPI(AccountModel accountModel,
 			IAccountDataService accountDataService,
 			IPageDataService pagedataService,
-			int folderAccountIDKey,
-			int folderPageIDKey, GroupModel groupModel,
-			IGroupDataService groupDataService)
-			: base(accountModel, accountDataService, pagedataService,
-				  folderAccountIDKey, folderPageIDKey)
+			FolderModel folderAccountModel, GroupModel groupModel,
+			IGroupDataService groupDataService,FolderGroupModel folderGroupModel)
+			: base(accountModel, accountDataService, pagedataService=null,
+				  folderAccountModel)
 		{
 			_groupModel = groupModel;
 			_groupDataService = groupDataService;
+			_folderGroupModel = folderGroupModel;
 		}
 
 		public ResultModel ShareLinkPost(string link, string content)
@@ -518,5 +527,272 @@ namespace Facebok_MKT.Service.Controller.FacebookAPIController
 				return ResultModel.Success;
 			}
 		}
+
+
+		public async Task ScanGroups(string keyWords)
+		{
+			_accountModel.Status = "Đang scan...";
+			//List<GroupModel> listGroupModel = new List<GroupModel>();
+			//int countgroups = 0;
+			using (var rq = new Leaf.xNet.HttpRequest())
+			{
+				rq.AllowAutoRedirect = true;
+				rq.KeepAlive = true;
+				rq.UserAgent = _accountModel.UserAgent;
+				FunctionHelper.SetCookieToRequestXnet(rq, _accountModel.Cookie);
+				rq.Proxy = FunctionHelper.ConvertToProxyClient(_accountModel.Proxy);
+				string body = "", refer = "", cursor = "";
+				FunctionHelper.AddHeaderxNet(rq, @"dpr: 1.309999942779541
+                                                viewport-width: 770
+                                                sec-ch-ua: ""Google Chrome"";v=""119"", ""Chromium"";v=""119"", ""Not?A_Brand"";v=""24""
+                                                sec-ch-ua-mobile: ?0
+                                                sec-ch-ua-platform: ""Windows""
+                                                sec-ch-ua-platform-version: ""15.0.0""
+                                                sec-ch-ua-model: """"
+                                                sec-ch-ua-full-version-list: ""Google Chrome"";v=""119.0.6045.160"", ""Chromium"";v=""119.0.6045.160"", ""Not?A_Brand"";v=""24.0.0.0""
+                                                sec-ch-prefers-color-scheme: light
+                                                Upgrade-Insecure-Requests: 1
+                                                Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                                                Sec-Fetch-Site: none
+                                                Sec-Fetch-Mode: navigate
+                                                Sec-Fetch-User: ?1
+                                                Sec-Fetch-Dest: document");
+				try
+				{
+					//body = rq.Get($"https://www.facebook.com/search/groups?q={keyWords.Replace(" ", "%20")}&filters=eyJwdWJsaWNfZ3JvdXBzOjAiOiJ7XCJuYW1lXCI6XCJwdWJsaWNfZ3JvdXBzXCIsXCJhcmdzXCI6XCJcIn0ifQ%3D%3D").ToString();
+					body = rq.Get($"https://www.facebook.com/search/groups?q={keyWords}").ToString();
+					refer = rq.Address.AbsoluteUri;
+				}
+				catch
+				{
+					return;
+				}
+				var av = RegexHelper.GetValueFromGroup("__user=(.*?)&", body);
+				var _user = av;
+				var fb_dtsg = RegexHelper.GetValueFromGroup("\"token\":\"(.*?)\"},", body);
+				var jazoest = RegexHelper.GetValueFromGroup("jazoest=(.*?)\",", body);
+				var lsd = RegexHelper.GetValueFromGroup("\"LSD\",\\[\\],{\"token\":\"(.*?)\"}", body);
+				var _spin_t = RegexHelper.GetValueFromGroup("\"__spin_t\":(.*?),", body);
+				var _spin_r = RegexHelper.GetValueFromGroup("data-btmanifest=\"(.*?)_main\"", body);
+				cursor = RegexHelper.GetValueFromGroup("\"end_cursor\":\"(.*?)\"}}}},", body);
+				var matches = Regex.Matches(body, "__isNode\":\"Group\",\"id\":\"(.*?)\",\"__isEntity\":\"Group\",\"profile_url\":\"(.*?)\",\"url\":\"(.*?)\",\"name\":\"(.*?)\",");
+				var matches2 = Regex.Matches(body, "\"viewer_forum_join_state\":\"(.*?)\",");
+				var matches3 = Regex.Matches(body, "\"prominent_snippet_text_with_entities\":null,\"primary_snippet_text_with_entities\":{\"delight_ranges\":\\[],\"image_ranges\":\\[],\"inline_style_ranges\":\\[],\"aggregated_ranges\":\\[],\"ranges\":\\[],\"color_ranges\":\\[],\"text\":\"(.*?) \\\\u00b7 (.*?) ");
+				if (matches.Count == 0)
+					return;
+				for (int i = 0; i < matches.Count; i++)
+				{
+					var match = matches[i];
+					if (match.Success)
+					{
+						GroupModel groupModel = new GroupModel();
+						groupModel.GroupID = match.Groups[1].Value;
+						var unicodeString = match.Groups[4].Value;
+						string jsonString = $"\"{unicodeString}\"";
+						groupModel.GroupName = JToken.Parse(jsonString).ToString();
+						if (groupModel.GroupID != "")
+						{
+							if (matches2.Count == matches.Count && matches2[i].Groups[1].Value == "CAN_JOIN")
+							{
+								groupModel.TypeGroup = SystemContants.TypeGroupPublic;
+							}
+							else
+							{
+								groupModel.TypeGroup = SystemContants.TypeGroupPrivate;
+							}
+
+							var _censorship = await CheckCensorship(groupModel.GroupID);
+							if (_censorship == ResultModel.CheckPoint)
+							{
+								_accountModel.Status = "Bị checkpoint";
+							}
+							else if (_censorship == ResultModel.KiemDuyet)
+							{
+								groupModel.GroupCensor = "Kiểm duyệt";
+							}
+							else if (_censorship == ResultModel.KoKiemDuyet)
+							{
+								groupModel.GroupCensor = "Không kiểm duyệt";
+							}
+							if (matches3.Count == matches.Count)
+							{
+								groupModel.GroupMember = (matches3[i].Groups[2].Value).ToString();
+							}
+
+							groupModel.FolderIdKey = _folderGroupModel.FolderIdKey;
+							groupModel.GroupFolderName = _folderGroupModel.FolderName;
+							if (await _groupDataService.Create(groupModel))
+							{
+								OnGroupFound?.Invoke(groupModel);
+							}
+						}
+					}
+				}
+			
+
+
+				while (cursor != "")
+				{
+					//Cuộn xuống để lấy group tiếp
+					FunctionHelper.AddHeaderxNet(rq, $@"sec-ch-ua: ""Google Chrome"";v=""119"", ""Chromium"";v=""119"", ""Not?A_Brand"";v=""24""
+                                                sec-ch-ua-mobile: ?0
+                                                viewport-width: 770
+                                                X-FB-Friendly-Name: SearchCometResultsPaginatedResultsQuery
+                                                X-FB-LSD: {lsd}
+                                                sec-ch-ua-platform-version: ""15.0.0""
+                                                Content-Type: application/x-www-form-urlencoded
+                                                X-ASBD-ID: 129477
+                                                dpr: 1.31
+                                                sec-ch-ua-model: """"
+                                                sec-ch-prefers-color-scheme: light
+                                                sec-ch-ua-platform: ""Windows""
+                                                Accept: */*
+                                                Sec-Fetch-Site: same-origin
+                                                Sec-Fetch-Mode: cors
+                                                Sec-Fetch-Dest: empty
+                                                Referer: {refer}");
+					var pr = new RequestParams()
+					{
+						["av"] = av,
+						["__user"] = _user,
+						["__a"] = "1",
+						["__req"] = "1",
+						["__hs"] = "19679.HYP:comet_pkg.2.1..2.1",
+						["dpr"] = "1.5",
+						["__ccg"] = "EXCELLENT",
+						["__rev"] = "1009974351",
+						["__s"] = "lm70d8:8juwhq:y1k1my",
+						["__hsi"] = "7443652042099935716",
+						["__dyn"] = "7AzHK4HzE4e5Q1ryaxG4VuC2-m1xDwAxu13wFwhUngS3q5UObwNwnof8boG0x8bo6u3y4o2Gwfi0LVEtwMw65xO2OU7m2210wEwgolzUO0-E7m4oaEnxO0Bo7O2l2Utwwwi831w9O7Udo5qfK0zEkxe2GewyDwsoqBwJK2W5olwUwOzEjUlwhEe88o4Wm7-8wywdG7FoarCwLyESE6C14wwwOg2cwMwrUdUcojxK2B0oobo8oC1Iwqo4e16wWw-zXDw",
+						["__csr"] = "3pqIz8ZrqTWENeK_kQBt-YCD9QSWlqiKUFiAvt7iaBniFi8JddnZ9F4CVe_kW8GmAGJ5amkDJ2EyviJEx4KSKkEghpQqih9rWG9XFa8BDGm7azAFQqVFHBCG_Cz8Ly8CGyFoyt34V8-bxt2V8W9hUS4rojyWJeA5Ua8oyQ5oy9DF1GcAyEy5opCACwyx213zO2o7OdxafypXJ7wwwhk698aazoaEfA2e68CufxF7wNxmUhyLzE9E5m2eq7oO4oc8Su1cK1HxS7okDwwCwwwHx-15wrawMwQwsU5-qh04ow7Rx-0xo3Aw9Gm0mq09Yweq0hG15wlQ10xq1awrpFUrU04u205dA05ZE07oq03nq0yo0V503fo0zC0iR0jU7y0qG0lm0rG08cAt06pQ1Aw0WZw2kF8mw1O60ue02-e0NC0iu04M83nwWw54w76g0Lt0dQVHwzgbEhQ",
+						["__comet_req"] = "15",
+						["fb_dtsg"] = fb_dtsg,
+						["jazoest"] = jazoest,
+						["lsd"] = lsd,
+						["__aaid"] = "0",
+						["__spin_r"] = _spin_r,
+						["__spin_b"] = "trunk",
+						["__spin_t"] = _spin_t,
+						["qpl_active_flow_ids"] = "431626709",
+						["fb_api_caller_class"] = "RelayModern",
+						["fb_api_req_friendly_name"] = "SearchCometResultsPaginatedResultsQuery",
+						["variables"] = $"{{\"allow_streaming\":false,\"args\":{{\"callsite\":\"COMET_GLOBAL_SEARCH\",\"config\":{{\"exact_match\":false,\"high_confidence_config\":null,\"intercept_config\":null,\"sts_disambiguation\":null,\"watch_config\":null}},\"context\":{{\"bsid\":\"0192e0eb-434e-4aab-9628-f5c29f9fa0cf\",\"tsid\":\"0.17590653478959006\"}},\"experience\":{{\"client_defined_experiences\":[\"ADS_PARALLEL_FETCH\"],\"encoded_server_defined_params\":null,\"fbid\":null,\"type\":\"GROUPS_TAB\"}},\"filters\":[],\"text\":\"{keyWords}\"}},\"count\":5,\"cursor\":\"{cursor}\",\"feedLocation\":\"SEARCH\",\"feedbackSource\":23,\"fetch_filters\":true,\"focusCommentID\":null,\"locale\":null,\"privacySelectorRenderLocation\":\"COMET_STREAM\",\"renderLocation\":\"search_results_page\",\"scale\":1,\"stream_initial_count\":0,\"useDefaultActor\":false,\"__relay_internal__pv__GHLShouldChangeAdIdFieldNamerelayprovider\":false,\"__relay_internal__pv__GHLShouldChangeSponsoredDataFieldNamerelayprovider\":false,\"__relay_internal__pv__IsWorkUserrelayprovider\":false,\"__relay_internal__pv__CometImmersivePhotoCanUserDisable3DMotionrelayprovider\":false,\"__relay_internal__pv__IsMergQAPollsrelayprovider\":false,\"__relay_internal__pv__FBReelsMediaFooter_comet_enable_reels_ads_gkrelayprovider\":false,\"__relay_internal__pv__CometUFIReactionsEnableShortNamerelayprovider\":false,\"__relay_internal__pv__CometUFIShareActionMigrationrelayprovider\":true,\"__relay_internal__pv__StoriesArmadilloReplyEnabledrelayprovider\":true,\"__relay_internal__pv__EventCometCardImage_prefetchEventImagerelayprovider\":true}}",
+						["server_timestamps"] = "true",
+						["doc_id"] = "27637107719237263",
+					};
+					try
+					{
+						body = rq.Post("https://www.facebook.com/api/graphql/", pr).ToString();
+						refer = rq.Address.AbsoluteUri;
+
+					}
+					catch
+					{
+						return ;
+					}
+					cursor = RegexHelper.GetValueFromGroup("\"end_cursor\":\"(.*?)\"}}}},", body);
+					matches = Regex.Matches(body, "__isNode\":\"Group\",\"id\":\"(.*?)\",\"__isEntity\":\"Group\",\"profile_url\":\"(.*?)\",\"url\":\"(.*?)\",\"name\":\"(.*?)\",");
+					matches2 = Regex.Matches(body, "\"viewer_forum_join_state\":\"(.*?)\",");
+					matches3 = Regex.Matches(body, "\"prominent_snippet_text_with_entities\":null,\"primary_snippet_text_with_entities\":{\"delight_ranges\":\\[],\"image_ranges\":\\[],\"inline_style_ranges\":\\[],\"aggregated_ranges\":\\[],\"ranges\":\\[],\"color_ranges\":\\[],\"text\":\"(.*?) \\\\u00b7 (.*?) ");
+					if (matches.Count == 0)
+						return ;
+					for (int i = 0; i < matches.Count; i++)
+					{
+						var match = matches[i];
+						if (match.Success)
+						{
+							GroupModel groupModel = new GroupModel();
+							groupModel.GroupID = match.Groups[1].Value;
+							var unicodeString = match.Groups[4].Value;
+							string jsonString = $"\"{unicodeString}\"";
+							groupModel.GroupName = JToken.Parse(jsonString).ToString();
+							if (groupModel.GroupID != "")
+							{
+								if (matches2.Count == matches.Count && matches2[i].Groups[1].Value == "CAN_JOIN")
+								{
+									groupModel.TypeGroup = SystemContants.TypeGroupPublic;
+								}
+								else
+								{
+									groupModel.TypeGroup = SystemContants.TypeGroupPrivate;
+								}
+
+								var _censorship = await CheckCensorship(groupModel.GroupID);
+								if (_censorship == ResultModel.CheckPoint)
+								{
+									_accountModel.Status = "Bị checkpoint";
+								}
+								else if (_censorship == ResultModel.KiemDuyet)
+								{
+									groupModel.GroupCensor = "Kiểm duyệt";
+								}
+								else if (_censorship == ResultModel.KoKiemDuyet)
+								{
+									groupModel.GroupCensor = "Không kiểm duyệt";
+								}
+								if (matches3.Count == matches.Count)
+								{
+									groupModel.GroupMember = (matches3[i].Groups[2].Value).ToString();
+								}
+
+								groupModel.FolderIdKey = _folderGroupModel.FolderIdKey;
+								groupModel.GroupFolderName = _folderGroupModel.FolderName;
+								if (await _groupDataService.Create(groupModel))
+								{
+									OnGroupFound?.Invoke(groupModel);
+								}
+							}
+						}
+					}
+				}
+			}
+			return ;
+		}
+
+		private async Task<ResultModel> CheckCensorship(string groupID)
+		{
+			using (var rq = new Leaf.xNet.HttpRequest())
+			{
+				rq.AllowAutoRedirect = true;
+				rq.KeepAlive = true;
+				rq.UserAgent = _accountModel.UserAgent;
+				//account.C_Cookie = "sb=zYiCYXmTV6Lo2j0SSdD4z-EX; datr=BFBXZS3zHKgU7vEYxxtr9uq0; locale=vi_VN; wl_cbv=v2%3Bclient_version%3A2376%3Btimestamp%3A1702437833; vpd=v1%3B659x400x2.0000000509232905; dpr=1.309999942779541; c_user=100088692310375; presence=C%7B%22t3%22%3A%5B%5D%2C%22utc3%22%3A1702547252349%2C%22v%22%3A1%7D; wd=798x701; xs=45%3AhxVrLNy5Um6BYQ%3A2%3A1702543845%3A-1%3A-1%3A%3AAcV7Noj7b0WSZO8oCntdpI54kdnU0hZXYebb3VvV5A; fr=10jmntnzueF170soo.AWV4PnA3-QqnKL8REWFz6GxO4xY.BletBJ.KC.AAA.0.0.BletBJ.AWV32Xp4ATY";
+
+				FunctionHelper.SetCookieToRequestXnet(rq, _accountModel.Cookie);
+				rq.Proxy = FunctionHelper.ConvertToProxyClient(_accountModel.Proxy);
+				string body = "", refer = "";
+				//Vào group
+				FunctionHelper.AddHeaderxNet(rq, @"Cache-Control: max-age=0
+                                                dpr: 1
+                                                viewport-width: 2510
+                                                sec-ch-ua: ""Not_A Brand"";v=""8"", ""Chromium"";v=""120"", ""Microsoft Edge"";v=""120""
+                                                sec-ch-ua-mobile: ?0
+                                                sec-ch-ua-platform: ""Windows""
+                                                sec-ch-ua-platform-version: ""15.0.0""
+                                                sec-ch-ua-model: """"
+                                                sec-ch-ua-full-version-list: ""Not_A Brand"";v=""8.0.0.0"", ""Chromium"";v=""120.0.6099.71"", ""Microsoft Edge"";v=""120.0.2210.61""
+                                                sec-ch-prefers-color-scheme: dark
+                                                DNT: 1
+                                                Upgrade-Insecure-Requests: 1
+                                                Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                                                Sec-Fetch-Site: none
+                                                Sec-Fetch-Mode: navigate
+                                                Sec-Fetch-User: ?1
+                                                Sec-Fetch-Dest: document");
+				try
+				{
+					body = rq.Get($"https://d.facebook.com/groups/{groupID}/madminpanel").ToString();
+					refer = rq.Address.AbsoluteUri;
+				}
+				catch
+				{
+
+				}
+				if (refer.Contains("checkpoint")) return ResultModel.CheckPoint;
+				if (body.Contains("madminpanel/pending")) return ResultModel.KiemDuyet;
+				return ResultModel.KoKiemDuyet;
+			}
+		}
+
 	}
 }

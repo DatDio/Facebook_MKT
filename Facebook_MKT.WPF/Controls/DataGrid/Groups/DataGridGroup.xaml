@@ -4,9 +4,288 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid.Groups"
+             xmlns:VisibilityConverter="clr-namespace:Facebook_MKT.WPF.Controls.DataGrid"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+    <UserControl.Resources>
+        <!-- Style for DataGridColumnHeader -->
+        <VisibilityConverter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="FadeInAnimationStyle" TargetType="StackPanel">
+            <Style.Triggers>
+                <Trigger Property="Visibility" Value="Visible">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                          From="0" To="1" Duration="0:0:1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Name="operator"
+ Grid.Row="0"
+ Width="1000"
+                 Style="{StaticResource FadeInAnimationStyle}"
+ Visibility="{Binding HasItemsSelected, 
+              Converter={StaticResource BooleanToVisibilityConverter}}" 
+ HorizontalAlignment="Left" Margin="20,0,0,10">
+            <Button Margin="0,0,10,0" Background="Transparent" Content="Xóa" 
+                 Command="{Binding DeleteGroupCommand}" />
+            <Button Background="Transparent" Content="Lưu" 
+                 Command="{Binding SaveGroupCommand}" Margin="0,0,10,0"/>
+            <Button Background="Transparent" Content="Chuyển Thư Mục" 
+Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
+        </StackPanel>
+
+
+        <DataGrid
+          DataContext="{Binding}"
+             Grid.Row="1"
+              x:Name="myDataGrid"
+             AutoGenerateColumns="False"
+             CanUserAddRows="False"
+             HeadersVisibility="All"
+             CanUserSortColumns="True"
+             ItemsSource="{Binding Groups}"
+             SelectionUnit="FullRow"
+             Background="Transparent"
+             BorderThickness="0"
+             BorderBrush="Transparent"
+             RowHeight="45"
+             LoadingRow="myDataGrid_LoadingRow"
+             SelectionMode="Extended"
+             RowHeaderWidth="0"
+             ColumnHeaderStyle="{StaticResource BoldHeaderStyle}">
+
+            <DataGrid.Columns>
+                <!-- Cột số thứ tự -->
+                <DataGridTemplateColumn Header="STT" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Checkbox column to select rows -->
+                <DataGridCheckBoxColumn
+                 Binding="{Binding IsSelected,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Width="80"
+                 CanUserResize="True">
+                    <DataGridCheckBoxColumn.Header>
+                        <CheckBox Margin="30,0,0,0"
+                  IsChecked="{Binding DataContext.IsAllItemsSelected, 
+                              RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
+                              Mode=TwoWay}" />
+                        <!--<TextBlock Text="{Binding DataContext.IsAllItemsSelected, 
+         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />-->
+                    </DataGridCheckBoxColumn.Header>
+
+                </DataGridCheckBoxColumn>
+
+
+                <!-- Column for GroupID -->
+                <DataGridTextColumn
+                 ElementStyle="{StaticResource CommonDataGridTextStyle}"
+                       Header="GroupID"
+                    IsReadOnly="False"
+                         Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+
+                    <DataGridTextColumn.Binding>
+                        <Binding
+                     Path="GroupID">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+           xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <!-- Column for GroupName -->
+                <DataGridTextColumn
+            ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="GroupName"
+            IsReadOnly="False"
+           Width="300">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="GroupName">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <!-- Column for GroupMember -->
+                <DataGridTextColumn
+            ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="GroupMember"
+            IsReadOnly="True"
+           Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="GroupMember">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <!-- Column for GroupCensor -->
+                <DataGridTextColumn
+                  ElementStyle="{StaticResource CommonDataGridTextStyle}"
+                  Header="GroupCensor"
+                    IsReadOnly="True"
+                 Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+                     Path="GroupCensor">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+      xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <!-- Column for TypeGroup -->
+                <DataGridTextColumn
+                 ElementStyle="{StaticResource CommonDataGridTextStyle}"
+         Binding="{Binding GroupFolderName}"
+         Header="GroupFolderName"
+                    IsReadOnly="True"
+                 Width="200"/>
+
+                <DataGridTextColumn
+                  ElementStyle="{StaticResource CommonDataGridTextStyle}"
+                  Header="TypeGroup"
+                    IsReadOnly="True"
+                 Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+                     Path="TypeGroup">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+      xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn
+                 ElementStyle="{StaticResource CommonDataGridTextStyle}"
+                  Header="GroupStatus"
+                         IsReadOnly="False"
+                 Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+                     Path="GroupStatus">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+      xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+            </DataGrid.Columns>
+
+            <!--MenuItem-->
+            <DataGrid.ContextMenu >
+                <ContextMenu Background="#04021F">
+                    <MenuItem Header="Chọn / Bỏ Chọn" 
+               Command="{Binding SelectedOrUnSelectedCommand}" 
+               CommandParameter="{Binding PlacementTarget, 
+                     RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+        <!--<ToolBar Grid.Row="1" Background="Transparent">
+         <TextBlock Text="{Binding ElementName=myDataGrid, Path=Items.Count, StringFormat='Total Rows: {0}'}"/>
+         <Separator />
+     </ToolBar>-->
     </Grid>
 </UserControl>

@@ -39,6 +39,12 @@ namespace Facebook_MKT.WPF.Controls.DataGrid.Account
 			}
 		}
 
+		private void myDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+		{
+			// Thiết lập Header của từng hàng để hiển thị số thứ tự
+			e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+		}
+
 		private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
 		{
 			if (DataContext is DataGridAccountViewModel viewModel)

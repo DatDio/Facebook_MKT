@@ -16,14 +16,16 @@ namespace Facebook_MKT.Data
 		}
 		public DbSet<Account> Accounts { get; set; }
 		public DbSet<Page> Pages { get; set; }
+		public DbSet<Group> Groups { get; set; }
 		public DbSet<Folder> Folders { get; set; }
 		public DbSet<FolderPage> FolderPage { get; set; }
+		public DbSet<FolderGroup> FolderGroup { get; set; }
 
-		//protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		//{
-		//	var path = Path.GetFullPath("FacebookMKT.db");
-		//	optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
-		//}
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			var path = Path.GetFullPath("FacebookMKT.db");
+			optionsBuilder.UseSqlite($"Data Source={Path.GetFullPath("FacebookMKT.db")}");
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -52,7 +54,7 @@ namespace Facebook_MKT.Data
 				entity.HasOne(a => a.Folder)
 						.WithMany(f => f.Accounts)
 						.HasForeignKey(a => a.FolderIdKey);
-				
+
 			});
 
 			// Cấu hình cho Page
@@ -76,21 +78,23 @@ namespace Facebook_MKT.Data
 						.WithMany(f => f.Pages)
 						.HasForeignKey(p => p.FolderIdKey)
 						.OnDelete(DeleteBehavior.Cascade);
-				
+
 			});
 
 			// Cấu hình cho Group
 			modelBuilder.Entity<Group>(entity =>
 			{
-				entity.HasKey(p => p.GroupIdKey);
-				entity.Property(p => p.GroupIdKey).ValueGeneratedOnAdd();
+				entity.HasKey(p => p.GroupID);
+				//entity.Property(p => p.GroupIdKey).ValueGeneratedOnAdd();
 				entity.Property(p => p.GroupName);
-				entity.Property(p=>p.GroupID).IsRequired();
-				entity.HasIndex(p=>p.GroupID).IsUnique();
 				entity.Property(p => p.GroupMember);
 				entity.Property(p => p.GroupCensor);
-				entity.Property(p => p.AccountID);
+				entity.Property(p => p.TypeGroup);
 				entity.Property(p => p.GroupStatus);
+
+				entity.HasOne(a => a.FolderGroup)
+						.WithMany(f => f.Groups)
+						.HasForeignKey(a => a.FolderIdKey);
 			});
 
 			//Cấu hình cho Folder
@@ -125,7 +129,6 @@ namespace Facebook_MKT.Data
 			modelBuilder.Entity<FolderGroup>(entity =>
 			{
 				entity.HasKey(f => f.FolderIdKey);
-
 				entity.Property(f => f.FolderName)
 								.IsRequired()
 								.HasMaxLength(255);

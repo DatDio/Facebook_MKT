@@ -7,10 +7,12 @@ using Faceebook_MKT.Domain.Systems;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using static MaterialDesignThemes.Wpf.Theme.ToolBar;
 
@@ -53,25 +55,27 @@ namespace Facebook_MKT.WPF.Window.ChangeFolderWindow
 			{
 				if (typeof(TFolder) == typeof(FolderModel))
 				{
+					var itemsToProcess = _itemSelectedToChange.ToList();
 					// Cập nhật thư mục cho từng mục đã chọn
-					foreach (var selectedItem in _itemSelectedToChange)
+					foreach (var selectedItem in itemsToProcess)
 					{
 						if (selectedItem is AccountModel accountModel)
 						{
 							accountModel.FolderIdKey = (SelectedItem as FolderModel).FolderIdKey;
-							// Gọi service để lưu lại thay đổi vào cơ sở dữ liệu
-							try
-							{
-								//await _dataService.Update(accountModel.AccountIDKey, accountModel);
 
-								var updateMethod = typeof(TDataService).GetMethod("Update");
-								await (Task<bool>)updateMethod.Invoke(_dataService, new object[] { accountModel.AccountIDKey, accountModel });
+							var updateMethod = typeof(TDataService).GetMethod("Update");
+							var status = await (Task<bool>)updateMethod.Invoke(_dataService, new object[] { accountModel.AccountIDKey, accountModel });
+							if (status)
+							{
 								accountModel.Status = $"Đã chuyển đến thư mục {(SelectedItem as FolderModel).FolderName}";
+								accountModel.TextColor = SystemContants.RowColorSuccess;
 							}
-							catch
+							else
 							{
-
+								accountModel.Status = $"Có lỗi xả ra khi chuyển đến thư mục {(SelectedItem as FolderModel).FolderName}";
+								accountModel.TextColor = SystemContants.RowColorFail;
 							}
+							accountModel.IsSelected = false;
 						}
 					}
 
@@ -83,24 +87,38 @@ namespace Facebook_MKT.WPF.Window.ChangeFolderWindow
 
 				if (typeof(TFolder) == typeof(FolderPageModel))
 				{
-					// Cập nhật thư mục cho từng mục đã chọn
-					foreach (var selectedItem in _itemSelectedToChange)
+					// Tạo một bản sao của danh sách _itemSelectedToChange
+					var itemsToProcess = _itemSelectedToChange.ToList();
+
+					foreach (var selectedItem in itemsToProcess)
 					{
 						if (selectedItem is PageModel pageModel)
 						{
 							// Giả sử mỗi mục có thuộc tính FolderIdKey
 							pageModel.FolderIdKey = (SelectedItem as FolderPageModel).FolderIdKey;
+
+							if (!Directory.Exists(Path.GetFullPath($"{SystemContants.FolderVideoPage}/{(SelectedItem as FolderPageModel).FolderName}")))
+							{
+								Directory.CreateDirectory($"{SystemContants.FolderVideoPage}/{(SelectedItem as FolderPageModel).FolderName}");
+							}
+
+							if (!Directory.Exists(Path.GetFullPath($"{SystemContants.FolderVideoPage}/{(SelectedItem as FolderPageModel).FolderName}/{pageModel.PageID}")))
+							{
+								Directory.CreateDirectory($"{SystemContants.FolderVideoPage}/{(SelectedItem as FolderPageModel).FolderName}/{pageModel.PageID}");
+								
+							}
+							pageModel.PageFolderVideo = $"{SystemContants.FolderVideoPage}/{(SelectedItem as FolderPageModel).FolderName}/{pageModel.PageID}";
 							// Gọi service để lưu lại thay đổi vào cơ sở dữ liệu
 							try
 							{
-								//await _dataService.Update(accountModel.AccountIDKey, accountModel);
-
+								// Sử dụng reflection để gọi phương thức Update
 								var updateMethod = typeof(TDataService).GetMethod("Update");
-								var status= await (Task<bool>)updateMethod.Invoke(_dataService, new object[] { pageModel.PageID, pageModel });
+								var status = await (Task<bool>)updateMethod.Invoke(_dataService, new object[] { pageModel.PageID, pageModel });
+
 								if (status)
 								{
 									pageModel.PageStatus = $"Đã chuyển đến thư mục {(SelectedItem as FolderPageModel).FolderName}";
-									pageModel.TextColor=SystemContants.RowColorSuccess;
+									pageModel.TextColor = SystemContants.RowColorSuccess;
 								}
 								else
 								{
@@ -110,9 +128,44 @@ namespace Facebook_MKT.WPF.Window.ChangeFolderWindow
 							}
 							catch
 							{
-
+								pageModel.PageStatus = $"Có lỗi xảy ra khi chuyển thư mục";
+								pageModel.TextColor = SystemContants.RowColorFail;
 							}
 
+							pageModel.IsSelected = false;
+						}
+					}
+
+
+					MessageBox.Show("Thao tác thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+					var window = Application.Current.Windows.OfType<ChangeFolderWindow>().FirstOrDefault();
+					window?.Close();
+
+				}
+
+				if (typeof(TFolder) == typeof(FolderGroupModel))
+				{
+					var itemsToProcess = _itemSelectedToChange.ToList();
+					// Cập nhật thư mục cho từng mục đã chọn
+					foreach (var selectedItem in itemsToProcess)
+					{
+						if (selectedItem is GroupModel groupModel)
+						{
+							groupModel.FolderIdKey = (SelectedItem as FolderGroupModel).FolderIdKey;
+
+							var updateMethod = typeof(TDataService).GetMethod("Update");
+							var status = await (Task<bool>)updateMethod.Invoke(_dataService, new object[] { groupModel.GroupID, groupModel });
+							if (status)
+							{
+								groupModel.GroupStatus = $"Đã chuyển đến thư mục {(SelectedItem as FolderGroupModel).FolderName}";
+								groupModel.TextColor = SystemContants.RowColorSuccess;
+							}
+							else
+							{
+								groupModel.GroupStatus = $"Có lỗi xả ra khi chuyển đến thư mục {(SelectedItem as FolderGroupModel).FolderName}";
+								groupModel.TextColor = SystemContants.RowColorFail;
+							}
+							groupModel.IsSelected = false;
 						}
 					}
 

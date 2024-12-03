@@ -26,7 +26,7 @@ namespace Faceebook_MKT.Domain.Models
 		private string? _status;
 		private string? _accountFolderName;
 		private string? _proxy;
-		private string? _userAgent;
+		private string? _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 		private string? _gpmId;
 		private int _folderIdKey;
 		private List<PageModel> _listPageModels;
@@ -56,7 +56,8 @@ namespace Faceebook_MKT.Domain.Models
 		}
 
 		private string _textColor;
-		public string TextColor {
+		public string TextColor
+		{
 			get => _textColor;
 			set
 			{

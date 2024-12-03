@@ -20,6 +20,9 @@ using Facebok_MKT.Service.DataService.Accounts;
 using Facebook_MKT.WPF.Window.ChangeFolderWindow;
 using System.Diagnostics;
 using System.IO;
+using Faceebook_MKT.Domain.EditVideoController;
+using Faceebook_MKT.Domain.Helpers;
+using Faceebook_MKT.Domain.Systems;
 namespace Facebook_MKT.WPF.ViewModels.DataGrid
 {
 
@@ -42,6 +45,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 		public ICommand LoadDataGridPageCommand { get; set; }
 		public ICommand ChangeFolderCommand { get; set; }
 		public ICommand StatisticalCommand { get; set; }
+		public ICommand EditVideoCommand { get; set; }
 		#endregion
 
 		public DataGridPageViewModel(IPageDataService pagedataService,
@@ -52,15 +56,9 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 			_pagedataService = pagedataService;
 			_folderPageViewModel = folderPageViewModel;
 			ItemsSelected = PagesSeleted;
+
 			//Lấy ra từ lớp cha
 			Pages = Items;
-
-			//LoadDataGridAccountCommand = new LoadDataGridAccountCommand(_dataService,
-			//							Accounts,
-			//							ItemsSelected,
-			//							accountToModelConverter,
-			//							_folderDataViewModel);
-			//LoadDataGridAccountCommand.Execute(1);
 
 			#region LoadDataGridPageCommand
 			LoadDataGridPageCommand = new RelayCommand<object>((p) =>
@@ -78,7 +76,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 					if (folderidKey == 1)
 					{
 						pageModels = await _pagedataService.GetAll();
-					
+
 					}
 					else
 					{
@@ -205,6 +203,7 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 
 			});
 			#endregion
+
 			#region ChangeFolderCommand
 			ChangeFolderCommand = new RelayCommand<object>((a) =>
 			{
@@ -229,6 +228,53 @@ namespace Facebook_MKT.WPF.ViewModels.DataGrid
 				// Mở cửa sổ ChangeFolderWindow dưới dạng dialog
 				changeFolderWindow.ShowDialog();
 			});
+			#endregion
+
+			#region EditVideoCommand
+			EditVideoCommand = new RelayCommand<object>((p) =>
+			{
+				return ItemsSelected != null && ItemsSelected.Any();
+			},
+async (p) =>
+{
+	await Task.Run(async () =>
+	{
+
+		foreach (var pageModel in ItemsSelected)
+		{
+			pageModel.TextColor = SystemContants.RowColorRunning;
+			var allSubFolder = FolderHelper.GetSubdirectories(pageModel.PageFolderVideo);
+			int stt = 0;
+			foreach (var subfolder in allSubFolder)
+			{
+				stt++;
+				pageModel.PageStatus = $"Đang edit video {stt}/{allSubFolder.Count}";
+				var videoPath = FolderHelper.GetFilesInSubFolders(subfolder, "mp4");
+				if (!String.IsNullOrEmpty(videoPath))
+				{
+					var fileName = Path.GetFileNameWithoutExtension(videoPath);
+					if (fileName.Contains("DONE")) continue;
+					var outputPath = Path.GetFullPath(Path.Combine(subfolder, fileName + "DONE.mp4"));
+					
+					if (FFmpegController.Add2LayerAndAddText(videoPath, outputPath))
+					{
+						File.Delete(videoPath);
+					}
+				}
+			}
+
+			// Sau khi hoàn thành xử lý video, cập nhật lại trạng thái trên UI thread
+			// Đảm bảo cập nhật UI trên chính UI thread
+			Application.Current.Dispatcher.Invoke(() =>
+			{
+				pageModel.PageStatus = "Đã edit xong!";
+				_pagedataService.Update(pageModel.PageID, pageModel);
+				pageModel.TextColor = SystemContants.RowColorSuccess;
+			});
+		}
+	});
+});
+
 			#endregion
 		}
 	}

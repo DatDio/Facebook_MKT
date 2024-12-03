@@ -12,12 +12,14 @@ using Facebook_MKT.WPF.ViewModels.Combobox;
 using Facebook_MKT.WPF.ViewModels.DataGrid;
 using Facebook_MKT.WPF.ViewModels.General_settings;
 using Facebook_MKT.WPF.Window.SetupPostWindow;
+using Faceebook_MKT.Domain.Helpers;
 using Faceebook_MKT.Domain.Models;
 using Faceebook_MKT.Domain.Systems;
 using GongSolutions.Wpf.DragDrop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -44,7 +46,7 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 		public FolderPageViewModel FolderPageViewModel { get; }
 		public DataGridAccountViewModel DataGridAccountViewModel { get; }
 		private BrowserService BrowserService { get; set; }
-		
+
 		#endregion
 
 		public ICommand StartCommand { get; set; }
@@ -72,8 +74,9 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 
 			#region Get Instances value
 			_generalSettings = generalSettings;
-			 _scale = _generalSettings.Scale;
-			 _apiGPMUrl = _generalSettings.APIURL;
+			_scale = _generalSettings.Scale;
+			_apiGPMUrl = _generalSettings.APIURL;
+			_generalSettings.PropertyChanged += OnGeneralSettingsChanged;
 			_proxyList = new List<string>();
 			_accountDataService = accountDataService;
 			_pageDataService = pageDataService;
@@ -122,7 +125,7 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 				return;
 
 
-				
+
 			});
 
 			#endregion
@@ -130,6 +133,7 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			#region RemoveTaskCommand
 			RemoveTaskCommand = new RelayCommand<TaskModel>((a) =>
 			{
+				if (IsRunning) return false;
 				return true;
 			}, async (a) =>
 			{
@@ -196,6 +200,7 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 		}
 		private async Task OneThread(CancellationToken token)
 		{
+			var taskListForThread = new ObservableCollection<TaskModel>(TaskList);
 			string position = "";
 			AccountModel accountModel = null;
 			BrowserService browserService = null;
@@ -254,14 +259,20 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 						accountModel.TextColor = SystemContants.RowColorFail;
 						continue;
 					}
-					foreach (var task in TaskList)
+
+					if (RandomTaskInTaskList)
+					{
+						FunctionHelper.ShuffleTaskList(taskListForThread);
+					}
+
+					foreach (var task in taskListForThread)
 					{
 						_pauseEvent.Wait();
 						_cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-						 ResultStatus = await fbBrowserController.Initialization();
+						ResultStatus = await fbBrowserController.CheckLogined();
 
-						if (ResultStatus == ResultModel.Fail)
+						if (ResultStatus == ResultModel.Fail || ResultStatus == ResultModel.CheckPoint)
 						{
 							accountModel.IsSelected = false;
 							accountModel.TextColor = SystemContants.RowColorFail;
@@ -272,11 +283,19 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 
 						if (result == ResultModel.CheckPoint)
 						{
+							accountModel.IsSelected = false;
+							accountModel.TextColor = SystemContants.RowColorFail;
 							break;
 						}
+						else
+						{
+							accountModel.TextColor = SystemContants.RowColorSuccess;
+
+						}
+
 					}
 					accountModel.IsSelected = false;
-					accountModel.TextColor=SystemContants.RowColorSuccess;
+					browserService.CloseChrome();
 				}
 
 			}
@@ -289,8 +308,16 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			{
 
 			}
-			accountModel.IsSelected = false;
-			browserService.CloseChrome();
+			try
+			{
+				//accountModel.IsSelected = false;
+				browserService.CloseChrome();
+			}
+			catch
+			{
+
+			}
+
 		}
 
 		private void LoadInitialAccountTasks()
@@ -368,7 +395,6 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 						TaskName = "Chấp nhận lời mời kết bạn",
 						Fields =
 						{
-							new TaskField("", TaskFieldType.Text),
 							new TaskField("Số người:",TaskFieldType.Number,5)
 						}
 					},
@@ -410,6 +436,18 @@ namespace Facebook_MKT.WPF.ViewModels.Accounts
 			var sgdsgf = AccountsSeleted;
 			// Thực hiện lệnh LoadDataToDataGridCommand với FolderIdKey
 			DataGridAccountViewModel.LoadDataGridAccountCommand.Execute(folderIdKey);
+		}
+
+		private void OnGeneralSettingsChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(GeneralSettingsViewModel.Scale))
+			{
+				_scale = _generalSettings.Scale; // Cập nhật giá trị _scale
+			}
+			else if (e.PropertyName == nameof(GeneralSettingsViewModel.APIURL))
+			{
+				_apiGPMUrl = _generalSettings.APIURL; // Cập nhật giá trị _apiGPMUrl
+			}
 		}
 	}
 }

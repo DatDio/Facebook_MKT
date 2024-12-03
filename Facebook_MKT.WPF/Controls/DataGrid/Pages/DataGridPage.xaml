@@ -52,6 +52,8 @@
 Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
             <Button Background="Transparent" Content="Thống kê" 
       Command="{Binding StatisticalCommand}" Margin="0,0,10,0"/>
+            <Button Background="Transparent" Content="Edit Video" 
+Command="{Binding EditVideoCommand}" Margin="0,0,10,0"/>
         </StackPanel>
 
 
@@ -69,13 +71,22 @@ Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
              BorderThickness="0"
              BorderBrush="Transparent"
              RowHeight="45"
-           
+             LoadingRow="myDataGrid_LoadingRow"
              SelectionMode="Extended"
              RowHeaderWidth="0"
+             Height="600"
              ColumnHeaderStyle="{StaticResource BoldHeaderStyle}">
 
             <DataGrid.Columns>
-
+                <!-- Cột số thứ tự -->
+                <DataGridTemplateColumn Header="STT" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <!-- Checkbox column to select rows -->
                 <DataGridCheckBoxColumn
@@ -98,6 +109,7 @@ Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
                 <DataGridTextColumn
                  ElementStyle="{StaticResource CommonDataGridTextStyle}"
                        Header="PageID"
+                    IsReadOnly="False"
                          Width="180">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -126,6 +138,7 @@ Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
                 <DataGridTextColumn
             ElementStyle="{StaticResource CommonDataGridTextStyle}"
             Header="PageName"
+            IsReadOnly="True"
            Width="180">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -141,6 +154,34 @@ Command="{Binding ChangeFolderCommand}" Margin="0,0,10,0"/>
                     <DataGridTextColumn.Binding>
                         <Binding
                Path="PageName">
+                            <Binding.ValidationRules>
+                                <!--<domain:NotEmptyValidationRule
+xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <!-- Column for VideoCount -->
+                <DataGridTextColumn
+            ElementStyle="{StaticResource CommonDataGridTextStyle}"
+            Header="VideoCount"
+            IsReadOnly="True"
+           Width="180">
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="WhiteSmoke"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="Height" Value="40"/>
+                            <Setter Property="Padding" Value="0,0,0,0"/>
+                            <Setter Property="FontSize" Value="16"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+                    <DataGridTextColumn.Binding>
+                        <Binding
+               Path="VideoCount">
                             <Binding.ValidationRules>
                                 <!--<domain:NotEmptyValidationRule
 xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
@@ -180,7 +221,7 @@ xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
                  ElementStyle="{StaticResource CommonDataGridTextStyle}"
          Binding="{Binding PageStatus}"
          Header="Status"
-                 Width="200"/>
+                 MinWidth="250"/>
 
                 <DataGridTextColumn
                   ElementStyle="{StaticResource CommonDataGridTextStyle}"
@@ -207,10 +248,11 @@ xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
                         </Binding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                
+
                 <DataGridTextColumn
                  ElementStyle="{StaticResource CommonDataGridTextStyle}"
                   Header="Folder"
+                         IsReadOnly="True"
                  Width="180">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">

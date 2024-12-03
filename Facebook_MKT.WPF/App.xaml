@@ -12,8 +12,7 @@
              xmlns:accountViews="clr-namespace:Facebook_MKT.WPF.Views.Accounts"
              xmlns:settingsViews="clr-namespace:Facebook_MKT.WPF.Views.GeneralSettings"
              xmlns:nav="clr-namespace:Facebook_MKT.WPF.State.Navigators"
-             xmlns:controls="clr-namespace:Facebook_MKT.WPF.Controls"
-             >
+             xmlns:controls="clr-namespace:Facebook_MKT.WPF.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -30,9 +29,7 @@
             <DataTemplate DataType="{x:Type pageVM:PageInteractViewModel}">
                 <pageViews:PageInteractView></pageViews:PageInteractView>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type pageVM:PagePostViewModel}">
-                <pageViews:PagePostView></pageViews:PagePostView>
-            </DataTemplate>
+         
             
             <DataTemplate DataType="{x:Type groupVM:GroupViewModel}">
                 <groupViews:GroupView></groupViews:GroupView>
@@ -48,6 +45,9 @@
             
             <!-- Đăng ký Converter -->
             <controls:ViewTypeToStyleConverter x:Key="ViewTypeToStyleConverter"/>
+
+          
+
             <Style TargetType="Button" x:Key="SelectedButtonStyle">
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Height" Value="50"/>
