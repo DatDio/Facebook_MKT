@@ -19,6 +19,7 @@ Facebook_MKT
 ✅ Monitor activity and keep track of logs.
 
 <img width="1386" height="792" alt="image" src="https://github.com/user-attachments/assets/dd12a6e3-a3a8-4c17-8bfe-1f1473bdae58" />
+<img width="1384" height="855" alt="image" src="https://github.com/user-attachments/assets/c0774f0e-43c5-4572-80a5-9b93c2e18e48" />
 
 
 ⚙️ Technologies Used
