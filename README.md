@@ -65,9 +65,7 @@ Perform actions: auto interaction, post content (page/group), upload Reels, moni
 Use the sidebar to navigate through features.
 
 📁 Project Structure
-bash
-Sao chép
-Chỉnh sửa
+
 Facebook_MKT/
 ├── Facebook_MKT.WPF/        # UI & ViewModels
 ├── Facebook_MKT.Domain/     # Entity & Interface definitions
